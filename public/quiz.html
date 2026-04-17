@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>EE-Quiz Arena</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css"> </head>
+<body style="background:#0a0a0a; color:white; font-family:sans-serif;">
+    <div id="quiz-header" style="padding:20px; border-bottom:2px solid #00d2ff; display:flex; justify-content:space-between;">
+        <button onclick="window.location.href='/'">⬅️ MENÜ</button>
+        <h2 id="q-user"></h2>
+        <h2 id="q-score">PUAN: 0</h2>
+    </div>
+
+    <div id="quiz-main" style="text-align:center; margin-top:50px;">
+        <h1 id="q-text">Soru Yükleniyor...</h1>
+        <div id="q-options" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; width:500px; margin:auto;"></div>
+    </div>
+
+    <script>
+        const socket = io();
+        const user = localStorage.getItem('username');
+        const avatar = localStorage.getItem('avatar');
+        document.getElementById('q-user').innerText = avatar + " " + user;
+
+        socket.emit('join_room', { roomName: 'quiz', username: user });
+
+        socket.on('yeni_soru', data => {
+            document.getElementById('q-text').innerText = data.soru.s;
+            const opt = document.getElementById('q-options');
+            opt.innerHTML = "";
+            data.soru.siklar.forEach((s, i) => {
+                opt.innerHTML += `<button onclick="socket.emit('quiz_cevap_ver',{cevap:${i},soruNo:${data.no}})" style="padding:20px; background:#1a1a1a; color:white; border:1px solid #00d2ff; cursor:pointer;">${s}</button>`;
+            });
+        });
+
+        socket.on('quiz_skor_guncelle', s => {
+            if(s[user]) document.getElementById('q-score').innerText = "PUAN: " + s[user];
+        });
+
+        socket.on('quiz_bitti', p => {
+            document.getElementById('quiz-main').innerHTML = `<h1>TEBRİKLER! PUANIN: ${p}</h1><button onclick="window.location.href='/'">LOBİYE DÖN</button>`;
+        });
+    </script>
+</body>
+</html>

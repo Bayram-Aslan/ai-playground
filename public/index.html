@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Arena V18 - Precision</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root { --blue: #00d2ff; --bg: #0a0a0a; --red: #ff1801; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .layer { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); z-index: 100; }
+        .active { display: flex !important; }
+        #status-bar { position: fixed; top: 15px; right: 15px; background: var(--blue); color: black; padding: 8px 18px; border-radius: 30px; font-weight: bold; z-index: 2000; }
+        .room-mode { background: var(--red) !important; color: white !important; }
+
+        /* IŞIKLARDAKİ ASILI KALMA HATASINI ÇÖZEN CSS */
+        .isik-seti { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 4px solid #333; display: flex; gap: 15px; }
+        .isik { width: 50px; height: 50px; border-radius: 50%; background: #222; position: relative; }
+        /* Aktiflik sınıfı geldiğinde yansın */
+        .isik.active::after { 
+            content: ''; position: absolute; inset: 0; border-radius: 50%; 
+            background: var(--red); box-shadow: 0 0 35px var(--red), 0 0 10px white; 
+        }
+
+        #react-btn { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(var(--red), #800); color: white; font-weight: 900; font-size: 28px; border: 12px solid #222; cursor: pointer; transition: 0.1s; }
+        #react-btn:active { transform: scale(0.9); }
+        .score-board { position: absolute; right: 20px; top: 80px; width: 280px; background: rgba(15,15,15,0.98); padding: 15px; border-radius: 15px; border: 1px solid #333; }
+        .header { width:100%; height:60px; background:#111; display:grid; grid-template-columns: 1fr 2fr 1fr; align-items:center; padding:0 25px; border-bottom:2px solid var(--red); }
+    </style>
+</head>
+<body>
+
+    <div id="status-bar">SİSTEM: <span id="val">0</span></div>
+
+    <div id="step-auth" class="layer active">
+        <div style="background:#111; padding:40px; border:2px solid var(--blue); border-radius:20px; text-align:center; width:350px;">
+            <h2 style="color:var(--blue)">PİLOT KAYDI</h2>
+            <input type="text" id="nick" placeholder="Adınız..." style="padding:15px; width:80%; text-align:center; margin-bottom:20px; background:#000; color:white; border:1px solid #333;">
+            <div style="font-size:40px; margin-bottom:20px; cursor:pointer;" onclick="this.style.background='#222'; sAv='🏎️'">🏎️</div>
+            <button onclick="toMenu()" style="width:100%; padding:15px; background:var(--blue); font-weight:bold; border:none; cursor:pointer;">SİSTEME GİR</button>
+        </div>
+    </div>
+
+    <div id="step-menu" class="layer">
+        <h1 id="welcome-txt"></h1>
+        <button onclick="startF1()" style="padding:20px 60px; background:#1a1a1a; color:white; border:2px solid var(--red); font-size:20px; cursor:pointer;">🏎️ F1 ARENA'YA GİR</button>
+    </div>
+
+    <div id="f1-arena" class="layer">
+        <div class="header">
+            <div onclick="backToMenu()" style="cursor:pointer; color:#888;">⬅️ MENÜ</div>
+            <div style="text-align:center;">F1 TRACK | <span id="p-name" style="color:var(--red)"></span></div>
+            <div style="text-align:right; font-size:12px;">ODADA: <span id="r-count">0</span></div>
+        </div>
+        
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%;">
+            <div class="isik-seti">
+                <div class="isik" id="l1"></div><div class="isik" id="l2"></div><div class="isik" id="l3"></div><div class="isik" id="l4"></div><div class="isik" id="l5"></div>
+            </div>
+            <button id="react-btn" onmousedown="f1Push()">TEPKİ</button>
+            <p id="f1-stat" style="margin-top:20px; font-weight:bold; font-size:22px; color:#444;">HAZIRLANIN...</p>
+            <button onclick="socket.emit('f1_hazirlik')" style="padding:15px 50px; background:#2ecc71; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">🏁 YARIŞI BAŞLAT</button>
+            
+            <div class="score-board">
+                <h4 style="color:var(--red); border-bottom:1px solid #333; margin:0 0 10px 0;">🏆 TOP 5 RECORDS</h4>
+                <div id="f1-top-list" style="font-size:14px;"></div>
+                <h4 style="color:#666; font-size:11px; margin-top:15px; border-bottom:1px solid #222;">🕒 SON DENEMELER</h4>
+                <div id="f1-latest-list" style="font-size:11px; color:#555;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let user = "", sAv = "", t0 = 0, currentRoom = "lobi", sonDenemeler = [];
+
+        function toMenu() {
+            user = document.getElementById('nick').value;
+            if(!user || !sAv) return alert("Ad ve İkon seç!");
+            document.getElementById('welcome-txt').innerText = `Selam ${sAv} ${user}`;
+            document.getElementById('step-auth').classList.remove('active');
+            document.getElementById('step-menu').classList.add('active');
+        }
+
+        function startF1() {
+            currentRoom = "f1";
+            document.getElementById('step-menu').classList.remove('active');
+            document.getElementById('f1-arena').classList.add('active');
+            document.getElementById('p-name').innerText = user;
+            socket.emit('join_room', { roomName: 'f1', username: user });
+        }
+
+        function backToMenu() {
+            currentRoom = "lobi";
+            document.getElementById('f1-arena').classList.remove('active');
+            document.getElementById('step-menu').classList.add('active');
+            socket.emit('join_room', { roomName: 'lobi', username: user });
+        }
+
+        // --- F1 HASSAS MANTIK ---
+        socket.on('f1_isiklari_hazirla', () => {
+            t0 = 0;
+            document.getElementById('f1-stat').innerText = "BEKLEYİN...";
+            document.getElementById('f1-stat').style.color = "orange";
+            document.querySelectorAll('.isik').forEach(l => l.classList.remove('active')); // Temiz başla
+            
+            let i = 1;
+            const timer = setInterval(() => {
+                const el = document.getElementById('l'+i);
+                if(el) el.classList.add('active');
+                i++;
+                if(i > 5) clearInterval(timer);
+            }, 700);
+        });
+
+        socket.on('f1_isiklari_sondur', () => {
+            // IŞIK SÖNMEME HATASINI BURADA ÇÖZDÜK
+            document.querySelectorAll('.isik').forEach(l => l.classList.remove('active'));
+            
+            document.getElementById('f1-stat').innerText = "ŞİMDİ!";
+            document.getElementById('f1-stat').style.color = "#2ecc71";
+            
+            // SAYAÇ HASSASİYETİ İÇİN: performance.now() kullanalım
+            t0 = performance.now(); 
+        });
+
+        function f1Push() {
+            if(t0 === 0) {
+                document.getElementById('f1-stat').innerText = "FALSE START!";
+                document.getElementById('f1-stat').style.color = "red";
+            } else {
+                const t1 = performance.now();
+                const diff = (t1 - t0) / 1000;
+                
+                socket.emit('f1_finish', { username: user, sure: diff });
+                document.getElementById('f1-stat').innerText = "TEPKİ: " + diff.toFixed(3) + "s";
+                t0 = 0; // Tekrar basmayı kilitle
+            }
+        }
+
+        socket.on('f1_skor_guncelle', s => {
+            const sorted = Object.entries(s).sort((a,b) => a[1]-b[1]).slice(0, 5);
+            document.getElementById('f1-top-list').innerHTML = sorted.map(([n,v], i) => `
+                <div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #222;">
+                    <span>${i+1}. ${n}</span><b>${v.toFixed(3)}s</b>
+                </div>`).join("");
+        });
+
+        socket.on('f1_son_deneme', d => {
+            sonDenemeler.unshift(d);
+            if(sonDenemeler.length > 5) sonDenemeler.pop();
+            document.getElementById('f1-latest-list').innerHTML = sonDenemeler.map(x => `<div>${x.user}: ${x.sure.toFixed(3)}s</div>`).join("");
+        });
+
+        socket.on('room_count', c => {
+            document.getElementById('r-count').innerText = c;
+            const bar = document.getElementById('status-bar');
+            bar.className = currentRoom === "f1" ? "room-mode" : "";
+            bar.innerHTML = `${currentRoom.toUpperCase()} MOD: ${c}`;
+        });
+
+        socket.on('total_count', c => { if(currentRoom === "lobi") document.getElementById('val').innerText = c; });
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>F1 Pro - AI Arena</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .header { width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; background: #111; border-bottom: 3px solid #ff1801; box-sizing: border-box; }
+        .grid-panel { background: #1a1a1a; padding: 40px; border-radius: 15px; border: 4px solid #333; display: flex; gap: 25px; margin: 50px 0; }
+        .lamp { width: 70px; height: 70px; border-radius: 50%; background: #111; border: 3px solid #000; transition: 0.1s; }
+        .lamp.active { background: #ff1801; box-shadow: 0 0 50px #ff1801; }
+        #react-btn { width: 250px; height: 250px; border-radius: 50%; border: 15px solid #222; background: radial-gradient(#ff1801, #900); color: white; font-weight: 900; font-size: 32px; cursor: pointer; transition: 0.1s; }
+        #react-btn:active { transform: scale(0.9); }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 90%; max-width: 1000px; margin-top: 50px; }
+        .panel { background: #121212; border: 1px solid #333; border-radius: 15px; padding: 25px; height: 350px; overflow-y: auto; }
+        .start-trigger { margin-top: 30px; padding: 15px 40px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        h3 { color: #ff1801; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button onclick="window.location.href='/'" style="background:none; border:1px solid #444; color:#ccc; cursor:pointer; padding:5px 15px;">QUIT</button>
+        <div style="letter-spacing:3px; font-weight:bold;">F1 TIMING SYSTEM</div>
+        <div>PILOTS: <span id="r-count" style="color:#ff1801">0</span></div>
+    </div>
+
+    <div class="grid-panel">
+        <div class="lamp" id="l1"></div><div class="lamp" id="l2"></div><div class="lamp" id="l3"></div><div class="lamp" id="l4"></div><div class="lamp" id="l5"></div>
+    </div>
+
+    <button id="react-btn" onmousedown="react()">PUSH</button>
+    <p id="msg" style="margin-top:20px; font-size:20px; font-weight:bold; color:#666;">READY TO START?</p>
+    <button class="start-trigger" onclick="socket.emit('f1_hazirlik')">START SEQUENCE</button>
+
+    <div class="dashboard">
+        <div class="panel"><h3>🏆 LEADERBOARD</h3><div id="scores"></div></div>
+        <div class="panel"><h3>💬 DATA STREAM</h3><div id="logs" style="font-size:14px; color:#aaa;"></div></div>
+    </div>
+
+    <script>
+        const socket = io();
+        const user = localStorage.getItem('username');
+        const av = localStorage.getItem('avatar');
+        let t0 = 0;
+
+        socket.emit('join_room', { roomName: 'f1', username: user, avatar: av });
+
+        socket.on('f1_isiklari_hazirla', () => {
+            t0 = 0;
+            document.querySelectorAll('.lamp').forEach(l => l.classList.remove('active'));
+            document.getElementById('msg').innerText = "LIGHTS ON...";
+            let i = 1;
+            const timer = setInterval(() => {
+                document.getElementById('l'+i).classList.add('active');
+                i++; if(i>5) clearInterval(timer);
+            }, 1000);
+        });
+
+        socket.on('f1_isiklari_sondur', (serverTime) => {
+            document.querySelectorAll('.lamp').forEach(l => l.classList.remove('active'));
+            document.getElementById('msg').innerText = "GO GO GO!";
+            document.getElementById('msg').style.color = "#2ecc71";
+            t0 = serverTime;
+        });
+
+        function react() {
+            if(t0 === 0) {
+                document.getElementById('msg').innerText = "FALSE START!";
+                document.getElementById('msg').style.color = "#ff1801";
+            } else {
+                const diff = (Date.now() - t0) / 1000;
+                socket.emit('f1_finish', { username: user, sure: diff });
+                document.getElementById('msg').innerText = "TIME: " + diff.toFixed(3) + "s";
+                t0 = 0;
+            }
+        }
+
+        socket.on('f1_skor_guncelle', s => {
+            const div = document.getElementById('scores');
+            const sorted = Object.entries(s).sort((a,b) => a[1]-b[1]);
+            div.innerHTML = sorted.map(([n,v], i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${i+1}. ${n}</span><b style="color:#ff1801">${v.toFixed(3)}s</b></div>`).join("");
+        });
+
+        socket.on('room_count', c => document.getElementById('r-count').innerText = c);
+    </script>
+</body>
+</html>
