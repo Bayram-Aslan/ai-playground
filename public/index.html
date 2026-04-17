@@ -3,120 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bayram Aslan | AI-Playground</title>
+    <title>AI Arena | Giriş</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #00ff88;
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
+        :root { --primary: #00ff88; --bg: #0b0f1a; --card-bg: #161b22; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center; }
+        
+        /* Profil Oluşturma Ekranı (Modal) */
+        #profile-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1000;
         }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        .profile-box {
+            background: var(--card-bg); padding: 40px; border-radius: 20px;
+            border: 2px solid var(--primary); text-align: center; width: 90%; max-width: 400px;
         }
 
-        header {
-            width: 100%;
-            padding: 2rem 0;
-            text-align: center;
-            background: linear-gradient(to bottom, #1e293b, transparent);
+        input {
+            width: 100%; padding: 12px; margin: 20px 0; border-radius: 8px;
+            border: 1px solid #30363d; background: #0b0f1a; color: white; text-align: center;
         }
 
-        .container {
-            max-width: 1000px;
-            width: 90%;
-            padding: 20px;
+        .start-btn {
+            background: var(--primary); color: black; padding: 12px 30px;
+            border-radius: 10px; font-weight: 800; cursor: pointer; border: none; width: 100%;
         }
 
-        .profile-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            border: 1px solid #334155;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .game-card {
-            background: var(--card-bg);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: transform 0.3s, border-color 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .game-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-        }
-
-        .game-card i {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .badge {
-            background: #334155;
-            color: var(--primary-color);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
+        /* Oyun Alanı (Başlangıçta Gizli) */
+        #main-content { display: none; width: 100%; max-width: 1200px; padding: 20px; text-align: center; }
+        
+        .game-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
+        .game-box { background: var(--card-bg); border: 1px solid #30363d; border-radius: 20px; padding: 30px; text-decoration: none; color: white; transition: 0.3s; }
+        .game-box:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .user-welcome { color: var(--primary); font-size: 1.2rem; margin-bottom: 30px; }
     </style>
 </head>
 <body>
-    <header>
-        <h1><i class="fas fa-microchip"></i> AI-Playground</h1>
-        <p>Bayram Aslan | Elektrik Mühendisi Adayı</p>
-    </header>
 
-    <div class="container">
-        <div class="profile-card">
-            <h2>Hoş Geldin!</h2>
-            <p>Bu platform, mühendislik projelerimi ve yapay zeka dersi kapsamında geliştirdiğim uygulamaları canlı olarak sergilediğim bir test alanıdır.</p>
-            <div style="margin-top: 15px;">
-                <span class="badge">Node.js</span>
-                <span class="badge">GitHub CI/CD</span>
-                <span class="badge">Render Hosting</span>
-            </div>
+    <div id="profile-overlay">
+        <div class="profile-box">
+            <i class="fas fa-user-circle" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2>Profilini Oluştur</h2>
+            <p>Arena'ya girmek için ismini yaz bro:</p>
+            <input type="text" id="username-input" placeholder="İsim veya Takma Ad..." maxlength="15">
+            <button class="start-btn" onclick="saveProfile()">ARENA'YA GİR</button>
         </div>
+    </div>
 
-        <div class="game-grid">
-            <a href="/quiz.html" class="game-card">
-                <i class="fas fa-stopwatch"></i>
-                <h3>Zaman Tahmini Oyunu</h3>
-                <p>Yapay zeka ile yarışarak zaman algınızı test edin. Bakalım kaç milisaniye farkla yakalayabileceksiniz?</p>
-                <div style="margin-top: 10px; font-weight: bold; color: var(--primary-color);">Oyna →</div>
+    <div id="main-content">
+        <div class="user-welcome" id="welcome-text"></div>
+        <h1>AI ARENA</h1>
+        <div class="game-container">
+            <a href="/quiz.html" class="game-box">
+                <i class="fas fa-bolt" style="font-size: 3rem; color: var(--primary);"></i>
+                <h2>Zaman Tahmini</h2>
+                <p>Reflekslerini test et.</p>
+                <div style="color: var(--primary); font-weight: bold; margin-top: 15px;">OYNA →</div>
             </a>
-
-            <div class="game-card" style="opacity: 0.6; cursor: not-allowed;">
-                <i class="fas fa-brain"></i>
-                <h3>AI Dikkat Testi</h3>
-                <p>Yakında: Siemens PLC sistemlerindeki sinyal takibi mantığıyla çalışan dikkat ölçer.</p>
-                <span class="badge">Yakında</span>
+            <div class="game-box" style="opacity: 0.5;">
+                <i class="fas fa-lock" style="font-size: 3rem;"></i>
+                <h2>Yakında</h2>
+                <p>Yeni modüller yolda.</p>
             </div>
         </div>
     </div>
+
+    <script>
+        // Sayfa yüklendiğinde kontrol et
+        window.onload = function() {
+            const savedName = localStorage.getItem('arena_user');
+            if (savedName) {
+                showMainContent(savedName);
+            }
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('username-input').value;
+            if (name.trim().length < 2) {
+                alert("Lütfen geçerli bir isim gir bro!");
+                return;
+            }
+            localStorage.setItem('arena_user', name);
+            showMainContent(name);
+        }
+
+        function showMainContent(name) {
+            document.getElementById('profile-overlay').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('welcome-text').innerText = "Hoş geldin, Operatör " + name + "!";
+        }
+    </script>
 </body>
 </html>
