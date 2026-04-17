@@ -2,87 +2,116 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>F1 Pro - AI Arena</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Reaction Test | ARENA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; background: #111; border-bottom: 3px solid #ff1801; box-sizing: border-box; }
-        .grid-panel { background: #1a1a1a; padding: 40px; border-radius: 15px; border: 4px solid #333; display: flex; gap: 25px; margin: 50px 0; }
-        .lamp { width: 70px; height: 70px; border-radius: 50%; background: #111; border: 3px solid #000; transition: 0.1s; }
-        .lamp.active { background: #ff1801; box-shadow: 0 0 50px #ff1801; }
-        #react-btn { width: 250px; height: 250px; border-radius: 50%; border: 15px solid #222; background: radial-gradient(#ff1801, #900); color: white; font-weight: 900; font-size: 32px; cursor: pointer; transition: 0.1s; }
-        #react-btn:active { transform: scale(0.9); }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 90%; max-width: 1000px; margin-top: 50px; }
-        .panel { background: #121212; border: 1px solid #333; border-radius: 15px; padding: 25px; height: 350px; overflow-y: auto; }
-        .start-trigger { margin-top: 30px; padding: 15px 40px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        h3 { color: #ff1801; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+        :root { --f1-red: #e10600; --bg: #0b0f1a; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        #game-container { text-align: center; width: 100%; max-width: 800px; }
+        
+        /* F1 Işıkları Tasarımı */
+        .lights-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 50px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 4px solid #333; }
+        .light-unit { display: flex; flex-direction: column; gap: 10px; }
+        .light { width: 60px; height: 60px; background: #222; border-radius: 50%; border: 4px solid #111; transition: background 0.1s; }
+        .light.on { background: var(--f1-red); box-shadow: 0 0 30px var(--f1-red); }
+        .light.green { background: #00ff88; box-shadow: 0 0 30px #00ff88; }
+
+        /* Gösterge Alanı */
+        #status { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 2px; height: 40px; }
+        #result { font-size: 4rem; font-weight: 900; margin: 20px 0; font-family: 'Orbitron'; color: var(--f1-red); }
+        
+        .action-btn { background: white; color: black; border: none; padding: 20px 60px; font-size: 1.5rem; font-weight: 900; border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.95); }
+        .back-link { position: absolute; top: 20px; left: 20px; color: #666; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <button onclick="window.location.href='/'" style="background:none; border:1px solid #444; color:#ccc; cursor:pointer; padding:5px 15px;">QUIT</button>
-        <div style="letter-spacing:3px; font-weight:bold;">F1 TIMING SYSTEM</div>
-        <div>PILOTS: <span id="r-count" style="color:#ff1801">0</span></div>
-    </div>
 
-    <div class="grid-panel">
-        <div class="lamp" id="l1"></div><div class="lamp" id="l2"></div><div class="lamp" id="l3"></div><div class="lamp" id="l4"></div><div class="lamp" id="l5"></div>
-    </div>
+    <a href="/" class="back-link">← ARENA'YA DÖN</a>
 
-    <button id="react-btn" onmousedown="react()">PUSH</button>
-    <p id="msg" style="margin-top:20px; font-size:20px; font-weight:bold; color:#666;">READY TO START?</p>
-    <button class="start-trigger" onclick="socket.emit('f1_hazirlik')">START SEQUENCE</button>
+    <div id="game-container">
+        <div id="status">HAZIR OLUN...</div>
+        
+        <div class="lights-container">
+            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
+            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
+            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
+            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
+            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
+        </div>
 
-    <div class="dashboard">
-        <div class="panel"><h3>🏆 LEADERBOARD</h3><div id="scores"></div></div>
-        <div class="panel"><h3>💬 DATA STREAM</h3><div id="logs" style="font-size:14px; color:#aaa;"></div></div>
+        <div id="result">0.000s</div>
+        <button id="main-btn" class="action-btn" onmousedown="handleClick()">BAŞLAT</button>
     </div>
 
     <script>
-        const socket = io();
-        const user = localStorage.getItem('username');
-        const av = localStorage.getItem('avatar');
-        let t0 = 0;
+        const lights = document.querySelectorAll('.light');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+        const btn = document.getElementById('main-btn');
+        
+        let gameState = 'IDLE'; // IDLE, LIGHTS_ON, WAITING, FINISHED
+        let startTime, timer;
 
-        socket.emit('join_room', { roomName: 'f1', username: user, avatar: av });
-
-        socket.on('f1_isiklari_hazirla', () => {
-            t0 = 0;
-            document.querySelectorAll('.lamp').forEach(l => l.classList.remove('active'));
-            document.getElementById('msg').innerText = "LIGHTS ON...";
-            let i = 1;
-            const timer = setInterval(() => {
-                document.getElementById('l'+i).classList.add('active');
-                i++; if(i>5) clearInterval(timer);
-            }, 1000);
-        });
-
-        socket.on('f1_isiklari_sondur', (serverTime) => {
-            document.querySelectorAll('.lamp').forEach(l => l.classList.remove('active'));
-            document.getElementById('msg').innerText = "GO GO GO!";
-            document.getElementById('msg').style.color = "#2ecc71";
-            t0 = serverTime;
-        });
-
-        function react() {
-            if(t0 === 0) {
-                document.getElementById('msg').innerText = "FALSE START!";
-                document.getElementById('msg').style.color = "#ff1801";
-            } else {
-                const diff = (Date.now() - t0) / 1000;
-                socket.emit('f1_finish', { username: user, sure: diff });
-                document.getElementById('msg').innerText = "TIME: " + diff.toFixed(3) + "s";
-                t0 = 0;
+        function handleClick() {
+            if (gameState === 'IDLE' || gameState === 'FINISHED') {
+                startSequence();
+            } else if (gameState === 'LIGHTS_ON') {
+                jumpStart();
+            } else if (gameState === 'WAITING') {
+                finish();
             }
         }
 
-        socket.on('f1_skor_guncelle', s => {
-            const div = document.getElementById('scores');
-            const sorted = Object.entries(s).sort((a,b) => a[1]-b[1]);
-            div.innerHTML = sorted.map(([n,v], i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;"><span>${i+1}. ${n}</span><b style="color:#ff1801">${v.toFixed(3)}s</b></div>`).join("");
-        });
+        function startSequence() {
+            gameState = 'LIGHTS_ON';
+            btn.innerText = "ŞİMDİ BAS!";
+            result.innerText = "0.000s";
+            result.style.color = "white";
+            status.innerText = "IŞIKLARIN SÖNMESİNİ BEKLE...";
+            
+            let currentLight = 0;
+            // 5 çift ışığı sırayla yak (F1 stili)
+            timer = setInterval(() => {
+                lights[currentLight * 2].classList.add('on');
+                lights[currentLight * 2 + 1].classList.add('on');
+                currentLight++;
+                
+                if (currentLight === 5) {
+                    clearInterval(timer);
+                    const randomDelay = Math.random() * 3000 + 1000; // 1-4 saniye arası rastgele
+                    setTimeout(goGreen, randomDelay);
+                }
+            }, 800);
+        }
 
-        socket.on('room_count', c => document.getElementById('r-count').innerText = c);
+        function goGreen() {
+            if (gameState !== 'LIGHTS_ON') return;
+            gameState = 'WAITING';
+            lights.forEach(l => l.classList.remove('on'));
+            startTime = performance.now();
+        }
+
+        function jumpStart() {
+            clearTimeout(timer);
+            gameState = 'FINISHED';
+            status.innerText = "HATALI KALKIŞ! (FALSE START)";
+            result.innerText = "---";
+            result.style.color = "orange";
+            btn.innerText = "TEKRAR DENE";
+        }
+
+        function finish() {
+            const endTime = performance.now();
+            const reactionTime = (endTime - startTime) / 1000;
+            gameState = 'FINISHED';
+            status.innerText = "REAKSİYON SÜRESİ:";
+            result.innerText = reactionTime.toFixed(3) + "s";
+            result.style.color = "#00ff88";
+            btn.innerText = "YENİDEN BAŞLAT";
+        }
     </script>
 </body>
 </html>
