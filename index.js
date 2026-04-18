@@ -15,7 +15,7 @@ let gameStates = {
     toplamKullanici: 0
 };
 
-const f1Logic = require('./games/f1');
+
 
 io.on('connection', (socket) => {
     gameStates.toplamKullanici++;

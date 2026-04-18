@@ -3,115 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Reaction Test | ARENA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <title>F1 ARENA | NEURAL INTERFACE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --f1-red: #e10600; --bg: #0b0f1a; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        :root { --f1-red: #ff1e1e; --bg: #030303; --neon: #00ff88; --glass: rgba(15, 15, 15, 0.95); }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        #game-container { text-align: center; width: 100%; max-width: 800px; }
-        
-        /* F1 Işıkları Tasarımı */
-        .lights-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 50px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 4px solid #333; }
-        .light-unit { display: flex; flex-direction: column; gap: 10px; }
-        .light { width: 60px; height: 60px; background: #222; border-radius: 50%; border: 4px solid #111; transition: background 0.1s; }
-        .light.on { background: var(--f1-red); box-shadow: 0 0 30px var(--f1-red); }
-        .light.green { background: #00ff88; box-shadow: 0 0 30px #00ff88; }
+        /* Arka Plan Efekti */
+        .grid-bg { position: fixed; inset: 0; background-image: radial-gradient(circle at center, #111 0%, #000 100%); z-index: -1; }
 
-        /* Gösterge Alanı */
-        #status { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 2px; height: 40px; }
-        #result { font-size: 4rem; font-weight: 900; margin: 20px 0; font-family: 'Orbitron'; color: var(--f1-red); }
+        /* Paneller - Gelişmiş Tasarım */
+        .panel { background: var(--glass); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         
-        .action-btn { background: white; color: black; border: none; padding: 20px 60px; font-size: 1.5rem; font-weight: 900; border-radius: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .action-btn:active { transform: scale(0.95); }
-        .back-link { position: absolute; top: 20px; left: 20px; color: #666; text-decoration: none; }
+        /* Sol Panel - HALL OF FAME */
+        .stats-left { position: absolute; left: 40px; width: 260px; border-left: 4px solid var(--neon); }
+        
+        /* Sağ Panel - MISSION LOGS */
+        .history-right { position: absolute; right: 40px; width: 240px; max-height: 500px; border-right: 4px solid var(--f1-red); overflow-y: auto; }
+
+        .title { font-family: 'Orbitron'; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; text-align: center; }
+        .neon-text { color: var(--neon); text-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        .red-text { color: var(--f1-red); text-shadow: 0 0 10px rgba(255,30,30,0.3); }
+
+        /* Liste Elemanları */
+        .list-item { display: flex; justify-content: space-between; padding: 10px 0; font-family: 'Orbitron'; font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        /* Merkez Alanı */
+        .game-center { text-align: center; width: 500px; }
+        #status { font-family: 'Orbitron'; font-size: 1.3rem; margin-bottom: 20px; letter-spacing: 3px; color: var(--neon); }
+        #timer { font-family: 'Orbitron'; font-size: 7rem; font-weight: 900; color: rgba(255,255,255,0.03); margin: 20px 0; }
+
+        /* F1 Işıkları */
+        .lights-box { display: flex; gap: 15px; background: #0a0a0a; padding: 30px; border-radius: 15px; border: 2px solid #222; margin-bottom: 40px; justify-content: center; }
+        .lamp-col { display: flex; flex-direction: column; gap: 12px; }
+        .lamp { width: 55px; height: 55px; background: #1a1a1a; border-radius: 50%; border: 3px solid #000; box-shadow: inset 0 0 10px #000; }
+        .lamp.red.on { background: var(--f1-red); box-shadow: 0 0 40px var(--f1-red), inset 0 0 15px rgba(0,0,0,0.5); }
+
+        /* ANA BUTON - Font Sorunu Çözüldü */
+        .main-btn { 
+            background: #fff; color: #000; border: none; padding: 15px 0; width: 300px; 
+            font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 2.2rem; 
+            border-radius: 8px; cursor: pointer; transition: 0.1s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .main-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+        .btn-reset { background: var(--f1-red); color: #fff; margin-top: 20px; display: none; padding: 12px 40px; font-size: 1.2rem; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        .back-nav { position: absolute; bottom: 30px; color: #444; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px; }
     </style>
 </head>
 <body>
+    <div class="grid-bg"></div>
 
-    <a href="/" class="back-link">← ARENA'YA DÖN</a>
-
-    <div id="game-container">
-        <div id="status">HAZIR OLUN...</div>
-        
-        <div class="lights-container">
-            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
-            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
-            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
-            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
-            <div class="light-unit"><div class="light"></div><div class="light"></div></div>
-        </div>
-
-        <div id="result">0.000s</div>
-        <button id="main-btn" class="action-btn" onmousedown="handleClick()">BAŞLAT</button>
+    <div class="panel stats-left">
+        <div class="title neon-text">Neural Hall of Fame</div>
+        <div id="leaderboard"></div>
     </div>
 
-    <script>
-        const lights = document.querySelectorAll('.light');
-        const status = document.getElementById('status');
-        const result = document.getElementById('result');
-        const btn = document.getElementById('main-btn');
+    <div class="panel history-right">
+        <div class="title red-text">Mission Logs</div>
+        <div id="history-list"></div>
+    </div>
+
+    <div class="game-center">
+        <div id="status">SİSTEM ÇEVRİMİÇİ</div>
+        <div id="timer">0.000</div>
         
-        let gameState = 'IDLE'; // IDLE, LIGHTS_ON, WAITING, FINISHED
-        let startTime, timer;
+        <div class="lights-box">
+            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+        </div>
 
-        function handleClick() {
-            if (gameState === 'IDLE' || gameState === 'FINISHED') {
-                startSequence();
-            } else if (gameState === 'LIGHTS_ON') {
-                jumpStart();
-            } else if (gameState === 'WAITING') {
-                finish();
-            }
-        }
+        <button id="trigger" class="main-btn" onmousedown="handleAction()">BAŞLAT</button>
+        <button id="reset-btn" class="main-btn btn-reset" onclick="resetUI()">SİSTEMİ SIFIRLA</button>
+    </div>
 
-        function startSequence() {
-            gameState = 'LIGHTS_ON';
-            btn.innerText = "ŞİMDİ BAS!";
-            result.innerText = "0.000s";
-            result.style.color = "white";
-            status.innerText = "IŞIKLARIN SÖNMESİNİ BEKLE...";
-            
-            let currentLight = 0;
-            // 5 çift ışığı sırayla yak (F1 stili)
-            timer = setInterval(() => {
-                lights[currentLight * 2].classList.add('on');
-                lights[currentLight * 2 + 1].classList.add('on');
-                currentLight++;
-                
-                if (currentLight === 5) {
-                    clearInterval(timer);
-                    const randomDelay = Math.random() * 3000 + 1000; // 1-4 saniye arası rastgele
-                    setTimeout(goGreen, randomDelay);
-                }
-            }, 800);
-        }
+    <a href="/" class="back-nav">← RETURN TO LOBBY</a>
 
-        function goGreen() {
-            if (gameState !== 'LIGHTS_ON') return;
-            gameState = 'WAITING';
-            lights.forEach(l => l.classList.remove('on'));
-            startTime = performance.now();
-        }
-
-        function jumpStart() {
-            clearTimeout(timer);
-            gameState = 'FINISHED';
-            status.innerText = "HATALI KALKIŞ! (FALSE START)";
-            result.innerText = "---";
-            result.style.color = "orange";
-            btn.innerText = "TEKRAR DENE";
-        }
-
-        function finish() {
-            const endTime = performance.now();
-            const reactionTime = (endTime - startTime) / 1000;
-            gameState = 'FINISHED';
-            status.innerText = "REAKSİYON SÜRESİ:";
-            result.innerText = reactionTime.toFixed(3) + "s";
-            result.style.color = "#00ff88";
-            btn.innerText = "YENİDEN BAŞLAT";
-        }
-    </script>
+    <script src="games/f1.js"></script>
 </body>
 </html>

@@ -3,170 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI ARENA | CHARACTER SELECTION</title>
+    <title>AI ARENA | Giriş Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon: #00ff88;
-            --rare: #00d4ff;
-            --legendary: #ff00ff;
-            --bg: #050505;
-        }
+        :root { --neon: #00ff88; --bg: #050505; --card: rgba(22, 27, 34, 0.9); }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; min-height: 100vh; overflow-x: hidden; }
+        .bg-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
+        
+        /* Giriş Paneli */
+        #login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .auth-card { background: var(--card); border: 2px solid var(--neon); border-radius: 30px; padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,255,136,0.1); }
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .avatar-item { font-size: 1.5rem; background: #1e293b; padding: 10px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
+        .avatar-item.selected { border-color: var(--neon); background: rgba(0,255,136,0.1); }
+        input { width: 100%; background: #000; border: 1px solid #444; padding: 15px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px; box-sizing: border-box; font-family: 'Orbitron'; }
+        .btn-enter { width: 100%; background: var(--neon); color: black; padding: 18px; border: none; border-radius: 10px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; }
 
-        body, html { margin: 0; padding: 0; background: var(--bg); font-family: 'Rajdhani', sans-serif; color: white; overflow-x: hidden; }
-
-        .bg-grid {
-            position: fixed; inset: 0;
-            background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
-            background-size: 40px 40px; z-index: -1;
-        }
-
-        /* Giriş Kartı */
-        #login-container {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; padding: 20px;
-        }
-
-        .auth-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 30px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-
-        /* Avatar Grid Geliştirildi */
-        .avatar-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin: 25px 0;
-            max-height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-        }
-
-        /* Özel Kaydırma Çubuğu */
-        .avatar-grid::-webkit-scrollbar { width: 5px; }
-        .avatar-grid::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
-
-        .avatar-item {
-            font-size: 2rem;
-            background: #1e293b;
-            padding: 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 2px solid transparent;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .avatar-item:hover { transform: scale(1.1); background: #334155; }
-        .avatar-item.selected { border-color: var(--neon); background: rgba(0,255,136,0.1); box-shadow: 0 0 15px var(--neon); }
-
-        /* Nadirlik Renkleri */
-        .rare { border-bottom: 3px solid var(--rare) !important; }
-        .legend { border-bottom: 3px solid var(--legendary) !important; }
-
-        input {
-            width: 100%; background: #000; border: 1px solid #444;
-            padding: 15px; border-radius: 10px; color: white;
-            font-family: 'Orbitron'; text-align: center; margin-bottom: 20px;
-            box-sizing: border-box; font-size: 1rem;
-        }
-
-        .btn-join {
-            width: 100%; background: var(--neon); color: black;
-            padding: 18px; border: none; border-radius: 12px;
-            font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
-        }
-
-        .btn-join:hover { box-shadow: 0 0 30px var(--neon); letter-spacing: 4px; }
-
-        #lobby { display: none; padding-top: 80px; text-align: center; }
+        /* Lobi Paneli */
+        #lobby { display: none; padding-top: 100px; text-align: center; }
+        .status-bar { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon); z-index: 100; box-sizing: border-box; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .game-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; text-decoration: none; color: white; transition: 0.3s; }
+        .game-card:hover { border-color: var(--neon); transform: translateY(-5px); }
+        .game-card i { font-size: 3rem; color: var(--neon); margin-bottom: 15px; }
     </style>
 </head>
 <body>
-
     <div class="bg-grid"></div>
 
-    <div id="login-container">
+    <div id="login-screen">
         <div class="auth-card">
-            <h1 style="font-family: 'Orbitron'; margin-bottom: 5px; color: var(--neon);">ARENA ACCESS</h1>
-            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 30px;">BATTLE-READY OPERATORS ONLY</p>
-            
-            <input type="text" id="username" placeholder="OPERATÖR TAKMA ADI" maxlength="12">
-
+            <h1 style="font-family: 'Orbitron'; color: var(--neon);">ARENA</h1>
+            <input type="text" id="username" placeholder="OPERATÖR ADI">
             <div class="avatar-grid">
                 <div class="avatar-item selected" onclick="pick(this, '🤖')">🤖</div>
-                <div class="avatar-item" onclick="pick(this, '👨‍💻')">👨‍💻</div>
-                <div class="avatar-item" onclick="pick(this, '🕵️')">🕵️</div>
-                <div class="avatar-item" onclick="pick(this, '👮')">👮</div>
-                <div class="avatar-item" onclick="pick(this, '👷')">👷</div>
-                <div class="avatar-item" onclick="pick(this, '🧑‍🔬')">🧑‍🔬</div>
-                <div class="avatar-item rare" onclick="pick(this, '🐱‍💻')">🐱‍💻</div>
-                <div class="avatar-item rare" onclick="pick(this, '👽')">👽</div>
-                <div class="avatar-item rare" onclick="pick(this, '👻')">👻</div>
-                <div class="avatar-item rare" onclick="pick(this, '🛸')">🛸</div>
-                <div class="avatar-item legend" onclick="pick(this, '🐲')">🐲</div>
-                <div class="avatar-item legend" onclick="pick(this, '⚡')">⚡</div>
-                <div class="avatar-item legend" onclick="pick(this, '🔥')">🔥</div>
-                <div class="avatar-item legend" onclick="pick(this, '👑')">👑</div>
-                <div class="avatar-item legend" onclick="pick(this, '🧙‍♂️')">🧙‍♂️</div>
-                <div class="avatar-item legend" onclick="pick(this, '👹')">👹</div>
+                <div class="avatar-item" onclick="pick(this, '⚡')">⚡</div>
+                <div class="avatar-item" onclick="pick(this, '🐱‍💻')">🐱‍💻</div>
+                <div class="avatar-item" onclick="pick(this, '🐲')">🐲</div>
             </div>
-
-            <button class="btn-join" onclick="enter()">SİSTEME SIZ</button>
+            <button class="btn-enter" onclick="enter()">SİSTEME GİR</button>
         </div>
     </div>
 
     <div id="lobby">
-        <h2 id="welcome-msg" style="font-family: 'Orbitron';"></h2>
-        <div style="margin-top: 50px;">
-            <a href="/quiz.html" style="text-decoration: none; display: inline-block; background: #161b22; padding: 40px; border-radius: 20px; border: 1px solid var(--neon);">
-                <i class="fas fa-play" style="font-size: 3rem; color: var(--neon);"></i>
-                <h3 style="color: white;">ZAMAN TAHMİNİ'Nİ BAŞLAT</h3>
+        <div class="status-bar">
+            <div style="color: var(--neon);">LOBBY: <span id="p-count">42</span> ONLINE</div>
+            <div id="user-tag"></div>
+        </div>
+        <h1 style="font-family: 'Orbitron';">GÖREVLER</h1>
+        <div class="game-grid">
+            <a href="/f1.html" class="game-card">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>F1 REAKSİYON</h3>
+                <p>Işıklar söndüğünde bas!</p>
+            </a>
+            <a href="/quiz.html" class="game-card">
+                <i class="fas fa-brain"></i>
+                <h3>BİLGİ TESTİ</h3>
+                <p>10 soruda zekanı kanıtla.</p>
             </a>
         </div>
     </div>
 
     <script>
         let selected = '🤖';
-
-        function pick(el, avatar) {
+        function pick(el, a) {
             document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected'));
-            el.classList.add('selected');
-            selected = avatar;
+            el.classList.add('selected'); selected = a;
         }
-
         function enter() {
             const val = document.getElementById('username').value;
-            if(val.length < 2) return alert("İsimsiz kahraman olmaz!");
-            
-            localStorage.setItem('user', val);
-            localStorage.setItem('avatar', selected);
-            show(val, selected);
+            if(val.length < 2) return alert("İsim gir!");
+            localStorage.setItem('user', val); localStorage.setItem('avatar', selected);
+            showLobby(val, selected);
         }
-
-        function show(n, a) {
-            document.getElementById('login-container').style.display = 'none';
+        function showLobby(n, a) {
+            document.getElementById('login-screen').style.display = 'none';
             document.getElementById('lobby').style.display = 'block';
-            document.getElementById('welcome-msg').innerHTML = `${a} HOŞ GELDİN, ${n.toUpperCase()}`;
+            document.getElementById('user-tag').innerText = a + " " + n.toUpperCase();
         }
-
+        setInterval(() => { document.getElementById('p-count').innerText = Math.floor(Math.random()*20+30); }, 3000);
         window.onload = () => {
-            const n = localStorage.getItem('user');
-            const a = localStorage.getItem('avatar');
-            if(n) show(n, a);
+            const n = localStorage.getItem('user'), a = localStorage.getItem('avatar');
+            if(n) showLobby(n, a);
         }
     </script>
 </body>
