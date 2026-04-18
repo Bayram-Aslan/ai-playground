@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POWER BATTLE | ARENA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00ff88; --danger: #ff1e1e; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        
+        .top-nav { width: 100%; height: 60px; background: #000; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
+
+        /* SAVAŞ ALANI */
+        .battle-ground { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; }
+        
+        /* CAN BARLARI */
+        .health-container { width: 100%; max-width: 800px; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .health-box { width: 45%; }
+        .name-label { font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 5px; }
+        .hp-bar-bg { width: 100%; height: 15px; background: #222; border-radius: 10px; overflow: hidden; }
+        .hp-fill { height: 100%; background: var(--neon); width: 100%; transition: 0.5s; }
+
+        /* GÜÇ BARI (DİNAMİK) */
+        .power-meter-wrap { width: 60px; height: 300px; background: #111; border: 2px solid #333; position: relative; border-radius: 10px; overflow: hidden; }
+        #power-fill { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #00ff88, #ffff00, #ff1e1e); height: 0%; }
+        
+        /* KARAKTERLER / NESNELER */
+        .fighter-area { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; }
+        .fighter { width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 5rem; transition: 0.3s; }
+        #player-obj { transform: scaleX(-1); } /* Sen soldasın */
+
+        .action-btn { background: white; color: black; border: none; padding: 20px 80px; font-family: 'Orbitron'; font-weight: 900; font-size: 1.5rem; border-radius: 10px; cursor: pointer; }
+        #msg { font-family: 'Orbitron'; color: var(--neon); height: 20px; }
+
+        @media (max-width: 768px) {
+            .fighter { font-size: 3rem; width: 80px; }
+            .action-btn { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-logo">POWER BATTLE</div>
+        <a href="/" style="color: #ff1e1e; text-decoration: none; font-size: 0.8rem; font-family: 'Orbitron';">LOBİYE DÖN</a>
+    </nav>
+
+    <div class="battle-ground">
+        <div class="health-container">
+            <div class="health-box">
+                <div class="name-label" id="p1-name">OYUNCU</div>
+                <div class="hp-bar-bg"><div id="p1-hp" class="hp-fill"></div></div>
+            </div>
+            <div id="round-info" style="font-family: 'Orbitron'; color: gold;">ROUND 1</div>
+            <div class="health-box" style="text-align: right;">
+                <div class="name-label">RAKİP BOT</div>
+                <div class="hp-bar-bg"><div id="p2-hp" class="hp-fill" style="background: var(--danger);"></div></div>
+            </div>
+        </div>
+
+        <div class="fighter-area">
+            <div id="player-obj" class="fighter">⚡</div>
+            <div class="power-meter-wrap">
+                <div id="power-fill"></div>
+            </div>
+            <div id="enemy-obj" class="fighter">🤖</div>
+        </div>
+
+        <div id="msg">HAZIR OL...</div>
+        <button id="hit-btn" class="action-btn" onclick="hit()">VUR!</button>
+    </div>
+
+    <script src="games/battle.js"></script>
+</body>
+</html>

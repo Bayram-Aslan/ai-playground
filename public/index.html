@@ -3,91 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI ARENA | Giriş Paneli</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>ARENA | HYPER-EVO HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff88; --bg: #050505; --card: rgba(22, 27, 34, 0.9); }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; min-height: 100vh; overflow-x: hidden; }
-        .bg-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
-        
-        /* Giriş Paneli */
-        #login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .auth-card { background: var(--card); border: 2px solid var(--neon); border-radius: 30px; padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,255,136,0.1); }
-        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
-        .avatar-item { font-size: 1.5rem; background: #1e293b; padding: 10px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
-        .avatar-item.selected { border-color: var(--neon); background: rgba(0,255,136,0.1); }
-        input { width: 100%; background: #000; border: 1px solid #444; padding: 15px; border-radius: 10px; color: white; text-align: center; margin-bottom: 20px; box-sizing: border-box; font-family: 'Orbitron'; }
-        .btn-enter { width: 100%; background: var(--neon); color: black; padding: 18px; border: none; border-radius: 10px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; }
+        :root { 
+            --neon: #00ff88; 
+            --f1-red: #ff1e1e; 
+            --quiz-blue: #007bff;
+            --battle-gold: #ffd700;
+            --catcher-orange: #ff8c00;
+            --link-cyan: #00f7ff;
+            --bg: #050505; 
+            --panel: rgba(15, 15, 15, 0.95); 
+        }
 
-        /* Lobi Paneli */
-        #lobby { display: none; padding-top: 100px; text-align: center; }
-        .status-bar { position: fixed; top: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon); z-index: 100; box-sizing: border-box; }
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1000px; margin: 0 auto; }
-        .game-card { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; text-decoration: none; color: white; transition: 0.3s; }
-        .game-card:hover { border-color: var(--neon); transform: translateY(-5px); }
-        .game-card i { font-size: 3rem; color: var(--neon); margin-bottom: 15px; }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Rajdhani', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            overflow-x: hidden;
+        }
+
+        .grid-bg { 
+            position: fixed; 
+            inset: 0; 
+            background-image: radial-gradient(circle at center, #111 0%, #000 100%); 
+            z-index: -1; 
+        }
+
+        /* HEADER */
+        header { 
+            text-align: center; 
+            padding: 40px 20px; 
+            z-index: 10;
+        }
+
+        header h1 { 
+            font-family: 'Orbitron'; 
+            font-size: 3.5rem; 
+            margin: 0; 
+            letter-spacing: 10px; 
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff 0%, #444 100%);
+            -webkit-background-clip: text;
+            background-clip: text; /* VS CODE UYARISI GİDERİLDİ */
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p { 
+            font-family: 'Orbitron'; 
+            color: var(--neon); 
+            letter-spacing: 5px; 
+            font-size: 0.8rem; 
+            margin-top: 10px;
+        }
+
+        /* OYUN SEÇİM ALANI - 3'LÜ GRID YAPI */
+        .container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px; 
+            width: 95%; 
+            max-width: 1300px; 
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .game-card { 
+            background: var(--panel); 
+            border: 1px solid #222; 
+            border-radius: 15px; 
+            padding: 25px; 
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+        }
+
+        .game-card:hover { 
+            transform: translateY(-8px); 
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px; 
+        }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .game-type { font-family: 'Orbitron'; font-size: 0.6rem; letter-spacing: 2px; color: #666; }
+
+        .game-card h3 { 
+            font-family: 'Orbitron'; 
+            font-size: 1.3rem; 
+            margin: 0 0 10px 0; 
+            font-weight: 900;
+        }
+
+        .game-card p { color: #888; font-size: 0.85rem; line-height: 1.4; margin-bottom: 10px; }
+
+        /* TEMA RENKLERİ */
+        .f1-theme { border-left: 5px solid var(--f1-red); }
+        .f1-theme .status-dot { background: var(--f1-red); box-shadow: 0 0 10px var(--f1-red); }
+
+        .quiz-theme { border-left: 5px solid var(--quiz-blue); }
+        .quiz-theme .status-dot { background: var(--quiz-blue); box-shadow: 0 0 10px var(--quiz-blue); }
+
+        .circle-theme { border-left: 5px solid var(--neon); }
+        .circle-theme .status-dot { background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+
+        .battle-theme { border-left: 5px solid var(--battle-gold); }
+        .battle-theme .status-dot { background: var(--battle-gold); box-shadow: 0 0 10px var(--battle-gold); }
+
+        .catcher-theme { border-left: 5px solid var(--catcher-orange); }
+        .catcher-theme .status-dot { background: var(--catcher-orange); box-shadow: 0 0 10px var(--catcher-orange); }
+
+        .link-theme { border-left: 5px solid var(--link-cyan); }
+        .link-theme .status-dot { background: var(--link-cyan); box-shadow: 0 0 10px var(--link-cyan); }
+
+        footer { 
+            margin-top: auto; 
+            padding: 30px; 
+            color: #333; 
+            font-family: 'Orbitron'; 
+            font-size: 0.6rem; 
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5rem; letter-spacing: 5px; }
+            .container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-grid"></div>
+    <div class="grid-bg"></div>
 
-    <div id="login-screen">
-        <div class="auth-card">
-            <h1 style="font-family: 'Orbitron'; color: var(--neon);">ARENA</h1>
-            <input type="text" id="username" placeholder="OPERATÖR ADI">
-            <div class="avatar-grid">
-                <div class="avatar-item selected" onclick="pick(this, '🤖')">🤖</div>
-                <div class="avatar-item" onclick="pick(this, '⚡')">⚡</div>
-                <div class="avatar-item" onclick="pick(this, '🐱‍💻')">🐱‍💻</div>
-                <div class="avatar-item" onclick="pick(this, '🐲')">🐲</div>
+    <header>
+        <h1>ARENA</h1>
+        <p>GAMING & ENGINEERING HUB</p>
+    </header>
+
+    <div class="container">
+        <div class="game-card f1-theme" onclick="location.href='/f1.html'">
+            <div class="card-header">
+                <span class="game-type">REACTION</span>
+                <span class="status-dot"></span>
             </div>
-            <button class="btn-enter" onclick="enter()">SİSTEME GİR</button>
+            <h3>F1 REAKSİYON</h3>
+            <p>Işıklar söndüğünde reaksiyonunu göster. Milisaniyelerle yarış!</p>
+        </div>
+
+        <div class="game-card quiz-theme" onclick="location.href='/quiz.html'">
+            <div class="card-header">
+                <span class="game-type">KNOWLEDGE</span>
+                <span class="status-dot"></span>
+            </div>
+            <h3>QUIZ ARENA</h3>
+            <p>Elektrik ve otomasyon dünyasında rakiplerini bilgiyle ele!</p>
+        </div>
+
+        <div class="game-card circle-theme" onclick="location.href='/circle.html'">
+            <div class="card-header">
+                <span class="game-type">PRECISION</span>
+                <span class="status-dot"></span>
+            </div>
+            <h3>CIRCLE MASTER</h3>
+            <p>Mükemmel daireyi çiz, el becerini ve hassasiyetini kanıtla!</p>
+        </div>
+
+        <div class="game-card battle-theme" onclick="location.href='/battle.html'">
+            <div class="card-header">
+                <span class="game-type">STRENGTH</span>
+                <span class="status-dot"></span>
+            </div>
+            <h3>POWER BATTLE</h3>
+            <p>Güç barını en tepede yakala, rakibine en ağır darbeyi vur!</p>
+        </div>
+
+        <div class="game-card catcher-theme" onclick="location.href='/catcher.html'">
+            <div class="card-header">
+                <span class="game-type">COORDINATION</span>
+                <span class="status-dot"></span>
+            </div>
+            <h3>NEON CATCHER</h3>
+            <p>Hızla düşen hedefleri yakala, kırmızı bombalardan kaç!</p>
+        </div>
+
+        <div class="game-card link-theme" onclick="location.href='/link.html'">
+            <div class="card-header">
+                <span class="game-type">STRATEGY</span>
+                <span class="status-dot"></span>
+            </div>
+            <h3>NEON LINK</h3>
+            <p>Aynı renkleri birleştir. Hatları çakıştırmadan sistemi kur!</p>
         </div>
     </div>
 
-    <div id="lobby">
-        <div class="status-bar">
-            <div style="color: var(--neon);">LOBBY: <span id="p-count">42</span> ONLINE</div>
-            <div id="user-tag"></div>
-        </div>
-        <h1 style="font-family: 'Orbitron';">GÖREVLER</h1>
-        <div class="game-grid">
-            <a href="/f1.html" class="game-card">
-                <i class="fas fa-tachometer-alt"></i>
-                <h3>F1 REAKSİYON</h3>
-                <p>Işıklar söndüğünde bas!</p>
-            </a>
-            <a href="/quiz.html" class="game-card">
-                <i class="fas fa-brain"></i>
-                <h3>BİLGİ TESTİ</h3>
-                <p>10 soruda zekanı kanıtla.</p>
-            </a>
-        </div>
-    </div>
-
-    <script>
-        let selected = '🤖';
-        function pick(el, a) {
-            document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected'));
-            el.classList.add('selected'); selected = a;
-        }
-        function enter() {
-            const val = document.getElementById('username').value;
-            if(val.length < 2) return alert("İsim gir!");
-            localStorage.setItem('user', val); localStorage.setItem('avatar', selected);
-            showLobby(val, selected);
-        }
-        function showLobby(n, a) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('lobby').style.display = 'block';
-            document.getElementById('user-tag').innerText = a + " " + n.toUpperCase();
-        }
-        setInterval(() => { document.getElementById('p-count').innerText = Math.floor(Math.random()*20+30); }, 3000);
-        window.onload = () => {
-            const n = localStorage.getItem('user'), a = localStorage.getItem('avatar');
-            if(n) showLobby(n, a);
-        }
-    </script>
+    <footer>
+        &copy; 2026 BAYRAM - AKU ELECTRICAL ENGINEERING PORTFOLIO
+    </footer>
 </body>
 </html>

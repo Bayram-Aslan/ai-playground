@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CIRCLE MASTER | PRECISION TEST</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --neon: #00ff88; --bg: #050505; --panel: rgba(15,15,15,0.95); }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; }
+        
+        .top-nav { width: 100%; height: 60px; background: #000; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
+        .exit-btn { border: 1px solid #ff1e1e; color: #ff1e1e; padding: 5px 15px; text-decoration: none; border-radius: 5px; font-family: 'Orbitron'; font-size: 0.7rem; }
+
+        .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        
+        #canvas-container { position: relative; width: 350px; height: 350px; background: #0a0a0a; border-radius: 50%; border: 2px dashed #222; cursor: crosshair; }
+        canvas { position: absolute; top: 0; left: 0; border-radius: 50%; }
+
+        .ui-overlay { text-align: center; margin-bottom: 20px; z-index: 10; }
+        #accuracy-display { font-family: 'Orbitron'; font-size: 4rem; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px rgba(0,255,136,0.3); }
+        #status-msg { font-family: 'Orbitron'; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+
+        .leaderboard { position: absolute; right: 20px; top: 80px; width: 200px; background: var(--panel); padding: 15px; border-radius: 10px; border: 1px solid #333; }
+        .lb-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); text-align: center; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        .lb-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; font-family: 'Orbitron'; }
+
+        .reset-btn { margin-top: 20px; background: white; color: black; border: none; padding: 10px 30px; font-family: 'Orbitron'; font-weight: 900; border-radius: 5px; cursor: pointer; display: none; }
+
+        @media (max-width: 768px) {
+            #canvas-container { width: 300px; height: 300px; }
+            .leaderboard { position: relative; right: 0; top: 0; margin-top: 20px; width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-logo">CIRCLE MASTER</div>
+        <a href="/" class="exit-btn">LOBİYE DÖN</a>
+    </nav>
+
+    <div class="game-container">
+        <div class="ui-overlay">
+            <div id="status-msg">DAİREYİ ÇİZMEYE BAŞLA</div>
+            <div id="accuracy-display">0%</div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="circleCanvas"></canvas>
+        </div>
+
+        <button id="reset-btn" class="reset-btn" onclick="resetGame()">YENİDEN DENE</button>
+
+        <div class="leaderboard">
+            <div class="lb-title">TOP PRECISION</div>
+            <div id="lb-list"></div>
+        </div>
+    </div>
+
+    <script src="games/circle.js"></script>
+</body>
+</html>
