@@ -16,7 +16,7 @@
             margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; 
         }
         
-        /* GİRİŞ VE PROFİL EKRANI */
+        /* GİRİŞ VE PROFİL DÜZENLEME PANELİ */
         #register-screen { 
             position: fixed; inset: 0; background: var(--bg); z-index: 1000; 
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -34,26 +34,33 @@
             border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; 
             font-family: 'Orbitron'; text-align: center; font-size: 1rem; 
         }
-        
-        /* ÜST NAVİGASYON */
+
+        /* LOBİ ÜST NAVİGASYON */
         .top-nav { 
             width: 100%; padding: 20px; display: flex; justify-content: space-between; 
             align-items: center; box-sizing: border-box; z-index: 100; 
         }
-        .user-profile { 
-            display: flex; align-items: center; gap: 12px; cursor: pointer; 
-            background: rgba(255,255,255,0.05); padding: 8px 20px; border-radius: 50px; 
-            border: 1px solid #222; transition: 0.3s; 
+        .user-info { 
+            display: flex; align-items: center; gap: 12px; 
+            background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 50px; 
+            border: 1px solid #222; cursor: default;
         }
-        .user-profile:hover { border-color: var(--neon); background: rgba(0,255,136,0.05); }
         #nav-avatar { font-size: 1.5rem; }
-        .logout-btn { 
-            color: #555; font-family: 'Orbitron'; font-size: 0.7rem; 
-            cursor: pointer; transition: 0.3s; letter-spacing: 1px; 
+        
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .btn-edit { 
+            color: var(--neon); font-family: 'Orbitron'; font-size: 0.7rem; 
+            cursor: pointer; border: 1px solid var(--neon); padding: 6px 12px; 
+            border-radius: 5px; transition: 0.3s;
         }
-        .logout-btn:hover { color: #ff1e1e; }
+        .btn-edit:hover { background: rgba(0,255,136,0.1); }
+        .btn-logout { 
+            color: #ff1e1e; font-family: 'Orbitron'; font-size: 0.7rem; 
+            cursor: pointer; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-logout:hover { text-shadow: 0 0 10px #ff1e1e; }
 
-        /* LOBİ VE KARTLAR */
+        /* LOBİ KARTLARI */
         #lobby-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .container { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
@@ -65,12 +72,8 @@
             cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             display: flex; flex-direction: column; justify-content: space-between; min-height: 180px;
         }
-        .game-card:hover { 
-            transform: translateY(-8px); border-color: rgba(255,255,255,0.3); 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
-        }
+        .game-card:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.3); }
         
-        /* KART TEMA RENKLERİ */
         .f1-card { border-left: 5px solid var(--f1); }
         .quiz-card { border-left: 5px solid var(--quiz); }
         .circle-card { border-left: 5px solid var(--neon); }
@@ -81,27 +84,20 @@
         .game-card h3 { font-family: 'Orbitron'; font-size: 1.3rem; margin: 0 0 10px 0; font-weight: 900; }
         .game-card p { color: #888; font-size: 0.85rem; line-height: 1.4; }
 
-        .btn-action { 
+        .btn-save { 
             background: var(--neon); color: black; border: none; padding: 15px; 
             border-radius: 8px; font-family: 'Orbitron'; font-weight: 900; 
             cursor: pointer; width: 100%; font-size: 1rem; 
         }
         
         header h1 { 
-            font-family: 'Orbitron'; 
-            font-size: 3rem; 
-            letter-spacing:12px; 
-            margin:0; 
+            font-family: 'Orbitron'; font-size: 3.5rem; letter-spacing:15px; margin:0; 
             background: linear-gradient(to bottom, #fff, #444); 
-            -webkit-background-clip: text; 
-            background-clip: text; 
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; background-clip: text; 
+            -webkit-text-fill-color: transparent; text-align: center;
         }
 
-        footer { 
-            margin-top: auto; padding: 30px; color: #333; font-family: 'Orbitron'; 
-            font-size: 0.6rem; letter-spacing: 2px; text-align: center; 
-        }
+        footer { margin-top: auto; padding: 30px; color: #333; font-family: 'Orbitron'; font-size: 0.6rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -110,7 +106,7 @@
         <div class="reg-box">
             <h2 id="reg-title" style="font-family:'Orbitron'; color:var(--neon); margin-bottom: 25px;">SİSTEME GİRİŞ</h2>
             <input type="text" id="username-input" placeholder="OPERATÖR ADI" maxlength="15">
-            <p style="font-size: 0.7rem; color:#666; font-family:'Orbitron';">BİR AVATAR SEÇİN</p>
+            <p style="font-size: 0.7rem; color:#666; font-family:'Orbitron';">AVATAR SEÇİN</p>
             <div class="avatar-list">
                 <div class="avatar-item" onclick="selectAvatar('⚡', this)">⚡</div>
                 <div class="avatar-item" onclick="selectAvatar('🤖', this)">🤖</div>
@@ -119,51 +115,49 @@
                 <div class="avatar-item" onclick="selectAvatar('🎯', this)">🎯</div>
                 <div class="avatar-item" onclick="selectAvatar('🛰️', this)">🛰️</div>
             </div>
-            <button class="btn-action" onclick="saveUser()">ARENA'YI AKTİF ET</button>
-            <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">İPTAL</p>
+            <button class="btn-save" onclick="saveUser()">SİSTEMİ ONAYLA</button>
+            <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">VAZGEÇ</p>
         </div>
     </div>
 
     <div id="lobby-screen">
         <nav class="top-nav">
-            <div class="user-profile" onclick="openProfile()">
+            <div class="user-info">
                 <span id="nav-avatar">⚡</span>
                 <span id="nav-name" style="font-family:'Orbitron';">OPERATÖR</span>
             </div>
-            <div class="logout-btn" onclick="logout()">SİSTEMİ KAPAT</div>
+            <div class="nav-actions">
+                <div class="btn-edit" onclick="openProfile()">PROFİLİ DÜZENLE</div>
+                <div class="btn-logout" onclick="logout()">SİSTEMİ KAPAT</div>
+            </div>
         </nav>
 
-        <header style="text-align:center; padding: 10px 20px 30px;">
+        <header style="padding: 20px 0 40px;">
             <h1>ARENA</h1>
-            <p style="color:var(--neon); font-family:'Orbitron'; font-size:0.7rem; letter-spacing:5px;">ELECTRICAL ENGINEERING HUB</p>
+            <p style="text-align:center; color:var(--neon); font-family:'Orbitron'; font-size:0.7rem; letter-spacing:5px;">MISSION CONTROL HUB</p>
         </header>
 
         <div class="container">
             <div class="game-card f1-card" onclick="location.href='/f1.html'">
                 <h3>F1 REAKSİYON</h3>
-                <p>Işıklar söndüğünde reaksiyonunu göster!</p>
+                <p>Işıklar söndüğünde mermi gibi fırla!</p>
             </div>
-
             <div class="game-card quiz-card" onclick="location.href='/quiz.html'">
                 <h3>QUIZ ARENA</h3>
                 <p>Elektrik dünyasında rakiplerini bilgiyle ele!</p>
             </div>
-
             <div class="game-card circle-card" onclick="location.href='/circle.html'">
                 <h3>CIRCLE MASTER</h3>
                 <p>Hassasiyetini ve el becerini kanıtla!</p>
             </div>
-
             <div class="game-card battle-card" onclick="location.href='/battle.html'">
                 <h3>POWER BATTLE</h3>
                 <p>Güç barını en tepede yakala, vuruşunu yap!</p>
             </div>
-
             <div class="game-card catcher-card" onclick="location.href='/catcher.html'">
                 <h3>NEON CATCHER</h3>
                 <p>Hedefleri yakala, bombalardan kaç!</p>
             </div>
-
             <div class="game-card link-card" onclick="location.href='/link.html'">
                 <h3>NEON LINK</h3>
                 <p>Hatları çakıştırmadan devreyi tamamla!</p>
@@ -184,7 +178,6 @@
                 document.getElementById('register-screen').style.display = 'flex';
                 document.getElementById('lobby-screen').style.display = 'none';
                 document.getElementById('cancel-edit').style.display = 'none';
-                document.getElementById('reg-title').innerText = "SİSTEME GİRİŞ";
             } else {
                 const user = JSON.parse(userStr);
                 document.getElementById('nav-name').innerText = user.name.toUpperCase();
@@ -210,7 +203,7 @@
         function openProfile() {
             const user = JSON.parse(localStorage.getItem('user'));
             document.getElementById('username-input').value = user.name;
-            document.getElementById('reg-title').innerText = "PROFİLİ DÜZENLE";
+            document.getElementById('reg-title').innerText = "PROFİLİ GÜNCELLE";
             document.getElementById('register-screen').style.display = 'flex';
             document.getElementById('cancel-edit').style.display = 'block';
         }
@@ -220,7 +213,7 @@
         }
 
         function logout() {
-            if(confirm("Tüm veriler silinecek. Emin misin?")) {
+            if(confirm("Tüm veriler silinecek ve sistem kapanacak. Emin misin?")) {
                 localStorage.clear();
                 location.reload();
             }
