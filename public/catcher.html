@@ -2,36 +2,60 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ARENA | ELITE CATCHER FINAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
-        body { margin: 0; padding: 0; background: var(--sky); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        body { 
+            margin: 0; padding: 0; background: var(--sky); 
+            color: white; font-family: 'Orbitron', sans-serif; 
+            overflow: hidden; touch-action: none; 
+            width: 100vw; height: 100vh;
+        }
+
+        /* Üst Bar Düzenlemesi (Safe Area Fix) */
         .game-nav {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            background: rgba(0,0,0,0.15); box-sizing: border-box;
+            position: fixed; 
+            top: env(safe-area-inset-top, 20px); /* Modern telefonlar için çentik payı */
+            left: 0; width: 100%; 
+            padding: 10px 25px;
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 1000;
+            background: rgba(0,0,0,0.1);
         }
-        #score-num { font-size: clamp(1.5rem, 5vw, 2.5rem); color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); font-weight: 900; }
-        #lives-display { font-size: clamp(1rem, 4vw, 1.5rem); letter-spacing: 5px; color: #ff3366; text-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-        canvas { display: block; position: absolute; top: 0; left: 0; }
+        #score-num { font-size: clamp(1.8rem, 6vw, 2.8rem); color: #fff; text-shadow: 2px 2px 8px rgba(0,0,0,0.3); font-weight: 900; }
+        #lives-display { font-size: clamp(1.2rem, 4vw, 1.8rem); letter-spacing: 5px; color: #ff3366; }
 
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        .btn-lobi {
+            color: #fff; text-decoration: none; font-size: 0.8rem; 
+            border: 1.5px solid #fff; padding: 6px 15px; border-radius: 10px;
+            background: rgba(0,0,0,0.2); transition: 0.3s;
+        }
+
+        /* Overlay Paneli */
         #overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
-            padding: 20px;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 2000; padding: 20px;
         }
-        .box { text-align: center; background: #fff; color: #000; padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        .btn { background: #0099ff; color: #fff; border: none; padding: 15px; font-family: 'Orbitron'; font-weight: 900; border-radius: 12px; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1.1rem; }
+        .box { text-align: center; background: #fff; color: #000; padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; }
+        .btn-restart { background: #0099ff; color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; border-radius: 15px; cursor: pointer; margin-top: 25px; width: 100%; font-size: 1.2rem; }
+
+        .shake { animation: shake 0.25s; }
+        @keyframes shake { 0% { transform:translate(5px,5px); } 50% { transform:translate(-5px,-5px); } 100% { transform:translate(0,0); } }
     </style>
 </head>
 <body id="game-body">
 
     <div class="game-nav">
-        <a href="/" style="color:#fff; text-decoration:none; font-size:0.8rem; border:1px solid #fff; padding:5px 12px; border-radius:8px;">LOBİ</a>
+        <a href="/" class="btn-lobi">LOBİ</a>
         <div id="score-num">0</div>
         <div id="lives-display">❤❤❤</div>
     </div>
@@ -40,9 +64,9 @@
 
     <div id="overlay">
         <div class="box">
-            <h2 id="end-msg" style="margin:0;">OYUN BİTTİ</h2>
-            <p id="final-res" style="font-size: 3.5rem; margin: 15px 0; font-weight: 900; color: #0099ff;">0</p>
-            <button class="btn" onclick="resetGame()">YENİDEN DENE</button>
+            <h2 id="end-msg" style="margin:0;">ŞEHİR BOĞULDU</h2>
+            <p id="final-res" style="font-size: 4rem; margin: 15px 0; font-weight: 900; color: #0099ff;">0</p>
+            <button class="btn-restart" onclick="resetGame()">YENİDEN DENE</button>
         </div>
     </div>
 
@@ -54,22 +78,24 @@
         let score = 0, lives = 3, gameActive = true;
         let elements = [], clouds = [], particles = [];
         let speedBase = 3.5, spawnInterval = 1000, lastSpawn = 0;
-        let waterLevel = 50, targetWaterLevel = 50;
+        let waterLevel = 60, targetWaterLevel = 60; // Başlangıç su seviyesi (iPad fix)
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initClouds();
+            initEnvironment();
         }
 
-        function initClouds() {
+        function initEnvironment() {
             clouds = [];
-            for(let i=0; i<4; i++) {
+            // Tabletlerde daha çok bulut olsun diye sayı artırıldı
+            const cloudCount = canvas.width > 800 ? 6 : 4;
+            for(let i=0; i < cloudCount; i++) {
                 clouds.push({
                     x: Math.random() * canvas.width,
-                    y: 30 + Math.random() * 80,
-                    w: 100 + Math.random() * 100,
-                    h: 40 + Math.random() * 20,
+                    y: 60 + Math.random() * 100, // Üstten biraz daha aşağıda
+                    w: 120 + Math.random() * 120,
+                    h: 40 + Math.random() * 25,
                     s: 0.2 + Math.random() * 0.4
                 });
             }
@@ -81,11 +107,10 @@
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
-                this.size = Math.random() * 6 + 2;
-                this.speedX = (Math.random() - 0.5) * 12;
-                this.speedY = (Math.random() - 0.5) * 12;
-                this.color = color;
-                this.alpha = 1;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = (Math.random() - 0.5) * 10;
+                this.speedY = (Math.random() - 0.5) * 10;
+                this.color = color; this.alpha = 1;
             }
             update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.04; }
             draw() {
@@ -97,11 +122,12 @@
 
         class RainDrop {
             constructor() {
-                this.size = clamp(canvas.width * 0.08, 35, 55); // Ekran boyutuna göre dinamik damla
+                // Tablet ve PC için damla boyutunu optimize et
+                this.size = Math.min(canvas.width * 0.07, 50); 
                 this.x = Math.random() * (canvas.width - this.size);
-                this.y = -80;
-                this.type = Math.random() > 0.2 ? 'water' : 'acid';
-                this.speed = speedBase + Math.random() * 2.5;
+                this.y = -100;
+                this.type = Math.random() > 0.22 ? 'water' : 'acid';
+                this.speed = speedBase + Math.random() * 3;
                 this.color = this.type === 'water' ? '#ffffff' : '#ff8c00';
             }
             draw() {
@@ -116,8 +142,6 @@
             update() { this.y += this.speed; }
         }
 
-        function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
-
         function handleInput(e) {
             if(!gameActive) return;
             const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
@@ -125,22 +149,22 @@
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                // Hitbox (Daha geniş tıklama alanı)
-                if(x >= el.x - 30 && x <= el.x + 30 && y >= el.y && y <= el.y + 70) {
-                    for(let j=0; j<12; j++) particles.push(new Particle(el.x, el.y + 20, el.color));
+                // Hitbox Genişletme (Tıklama kolaylığı)
+                if(x >= el.x - 40 && x <= el.x + 40 && y >= el.y - 10 && y <= el.y + 80) {
+                    for(let j=0; j<10; j++) particles.push(new Particle(el.x, el.y + 20, el.color));
                     
                     if(el.type === 'water') {
                         score += 10;
-                        targetWaterLevel = Math.max(50, targetWaterLevel - 12);
-                        speedBase += 0.04; // Kademeli hızlanma
-                        spawnInterval = Math.max(400, spawnInterval - 5);
+                        targetWaterLevel = Math.max(60, targetWaterLevel - 15);
+                        speedBase += 0.03;
+                        spawnInterval = Math.max(450, spawnInterval - 8);
                         document.getElementById('score-num').innerText = score;
                     } else { 
-                        lives--; // TURUNCU CAN GÖTÜRÜR
+                        lives--; 
                         updateLives();
                         body.classList.add('shake');
                         setTimeout(() => body.classList.remove('shake'), 200);
-                        if(lives <= 0) gameOver("ASİT SİSTEMİ ÇÖKERTTİ");
+                        if(lives <= 0) gameOver("ASİT YAĞMURU DURDURULAMADI");
                     }
                     elements.splice(i, 1);
                     break;
@@ -158,12 +182,13 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Bulutlar
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillStyle = 'rgba(255,255,255,0.75)';
             clouds.forEach(c => {
                 ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
                 c.x += c.s; if(c.x - c.w/2 > canvas.width) c.x = -c.w/2;
             });
 
+            // Yumuşak Su Yükselmesi
             waterLevel += (targetWaterLevel - waterLevel) * 0.08;
 
             if (time - lastSpawn > spawnInterval && elements.length < 15) {
@@ -180,22 +205,22 @@
                 let el = elements[i];
                 el.update(); el.draw();
                 if(el.y > canvas.height - waterLevel) {
-                    if(el.type === 'water') targetWaterLevel += 25; // Normal damla kaçarsa su yükselir
+                    if(el.type === 'water') targetWaterLevel += 30;
                     elements.splice(i, 1);
                 }
             }
 
-            // SUYU ÇİZ
-            ctx.fillStyle = 'rgba(0, 153, 255, 0.75)';
+            // SUYU ÇİZ (Daha şeffaf ve canlı)
+            ctx.fillStyle = 'rgba(0, 153, 255, 0.7)';
             ctx.fillRect(0, canvas.height - waterLevel, canvas.width, waterLevel);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath();
             for(let i=0; i<canvas.width; i+=25) {
-                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/250 + i/60)*6);
+                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/300 + i/60)*6);
             }
             ctx.stroke();
 
             // TAŞMA KONTROLÜ
-            if(waterLevel >= canvas.height * 0.8) gameOver("ŞEHİR SULAR ALTINDA");
+            if(waterLevel >= canvas.height * 0.85) gameOver("ŞEHİR SULAR ALTINDA");
 
             requestAnimationFrame(update);
         }
@@ -212,7 +237,7 @@
         }
 
         function resetGame() {
-            score = 0; lives = 3; waterLevel = 50; targetWaterLevel = 50; speedBase = 3.5; spawnInterval = 1000;
+            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60; speedBase = 3.5; spawnInterval = 1000;
             elements = []; particles = [];
             gameActive = true; updateLives();
             document.getElementById('score-num').innerText = "0";
