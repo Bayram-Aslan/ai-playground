@@ -2,28 +2,39 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ARENA | HYPER-EVO HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { 
             --neon: #00ff88; --f1: #ff1e1e; --quiz: #007bff; --battle: #ffd700;
-            --catcher: #ff8c00; --link: #00f7ff; --bg: #050505; --panel: rgba(15, 15, 15, 0.98); 
+            --catcher: #ff8c00; --link: #00f7ff; --bg: #050505; --panel: rgba(10, 10, 10, 0.9); 
         }
 
         body { 
             background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
-            margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; 
+            margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column;
+            /* Arka plan ızgara animasyonu */
+            background-image: linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 0 500px; }
         }
         
-        /* KAYIT VE PROFİL PANELİ */
+        /* GİRİŞ VE PROFİL PANELİ */
         #register-screen { 
             position: fixed; inset: 0; background: var(--bg); z-index: 1000; 
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
         .reg-box { 
             background: var(--panel); padding: 40px; border: 1px solid #222; border-radius: 20px; 
-            text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,255,136,0.1); 
+            text-align: center; width: 90%; max-width: 400px; backdrop-filter: blur(10px);
+            box-shadow: 0 0 50px rgba(0,255,136,0.1); 
         }
         .avatar-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
         .avatar-item { font-size: 2.5rem; cursor: pointer; padding: 10px; border-radius: 10px; border: 2px solid transparent; transition: 0.3s; }
@@ -43,7 +54,7 @@
         .user-info { 
             display: flex; align-items: center; gap: 12px; 
             background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 50px; 
-            border: 1px solid #222; cursor: default;
+            border: 1px solid #222; cursor: default; backdrop-filter: blur(5px);
         }
         
         .nav-actions { display: flex; gap: 15px; align-items: center; }
@@ -55,51 +66,58 @@
         .btn-exit-red { 
             color: #ff1e1e; font-family: 'Orbitron'; font-size: 0.7rem; 
             cursor: pointer; letter-spacing: 1px; transition: 0.3s;
-            text-decoration: none; border: 1px solid #ff1e1e; padding: 6px 12px; border-radius: 5px;
+            border: 1px solid #ff1e1e; padding: 6px 12px; border-radius: 5px;
         }
-        .btn-exit-red:hover { background: rgba(255,30,30,0.1); box-shadow: 0 0 10px #ff1e1e; }
 
         /* LOBİ KARTLARI */
         #lobby-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .container { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 20px; width: 95%; max-width: 1300px; padding: 20px; 
+            gap: 25px; width: 95%; max-width: 1300px; padding: 20px; 
         }
         
         .game-card { 
             background: var(--panel); border: 1px solid #222; border-radius: 15px; padding: 25px; 
             cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            display: flex; flex-direction: column; justify-content: space-between; min-height: 180px;
+            display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
+            position: relative; overflow: hidden;
         }
-        .game-card:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.3); }
+        .game-card::after {
+            content: ''; position: absolute; inset: 0; 
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+            transform: translateX(-100%); transition: 0.5s;
+        }
+        .game-card:hover::after { transform: translateX(100%); }
+        .game-card:hover { transform: translateY(-10px); border-color: var(--neon); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        .f1-card { border-left: 5px solid var(--f1); }
-        .quiz-card { border-left: 5px solid var(--quiz); }
-        .circle-card { border-left: 5px solid var(--neon); }
-        .battle-card { border-left: 5px solid var(--battle); }
-        .catcher-card { border-left: 5px solid var(--catcher); }
-        .link-card { border-left: 5px solid var(--link); }
+        .best-score-badge {
+            font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon);
+            background: rgba(0, 255, 136, 0.1); padding: 4px 8px; border-radius: 4px;
+            margin-top: 15px; align-self: flex-start; border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .f1-card { border-top: 4px solid var(--f1); }
+        .quiz-card { border-top: 4px solid var(--quiz); }
+        .circle-card { border-top: 4px solid var(--neon); }
+        .battle-card { border-top: 4px solid var(--battle); }
+        .catcher-card { border-top: 4px solid var(--catcher); }
+        .link-card { border-top: 4px solid var(--link); }
 
         .btn-save { 
             background: var(--neon); color: black; border: none; padding: 15px; 
             border-radius: 8px; font-family: 'Orbitron'; font-weight: 900; 
             cursor: pointer; width: 100%; font-size: 1rem; 
         }
-
-        .btn-close-app {
-            background: transparent; color: #ff1e1e; border: 1px solid #ff1e1e; padding: 10px; 
-            border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; width: 100%; 
-            margin-top: 15px; font-size: 0.8rem; transition: 0.3s;
-        }
         
         header h1 { 
-            font-family: 'Orbitron'; font-size: 3.5rem; letter-spacing:15px; margin:0; 
-            background: linear-gradient(to bottom, #fff, #444); 
+            font-family: 'Orbitron'; font-size: 4rem; letter-spacing:15px; margin:0; 
+            background: linear-gradient(to bottom, #fff, #666); 
             -webkit-background-clip: text; background-clip: text; 
             -webkit-text-fill-color: transparent; text-align: center;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
         }
 
-        footer { margin-top: auto; padding: 30px; color: #333; font-family: 'Orbitron'; font-size: 0.6rem; text-align: center; }
+        footer { margin-top: auto; padding: 30px; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -108,7 +126,6 @@
         <div class="reg-box">
             <h2 id="reg-title" style="font-family:'Orbitron'; color:var(--neon); margin-bottom: 25px;">SİSTEME GİRİŞ</h2>
             <input type="text" id="username-input" placeholder="OPERATÖR ADI" maxlength="15">
-            <p style="font-size: 0.7rem; color:#666; font-family:'Orbitron';">AVATAR SEÇİN</p>
             <div class="avatar-list">
                 <div class="avatar-item" onclick="selectAvatar('⚡', this)">⚡</div>
                 <div class="avatar-item" onclick="selectAvatar('🤖', this)">🤖</div>
@@ -118,7 +135,7 @@
                 <div class="avatar-item" onclick="selectAvatar('🛰️', this)">🛰️</div>
             </div>
             <button class="btn-save" onclick="saveUser()">SİSTEMİ BAŞLAT</button>
-            <button class="btn-close-app" id="final-exit-btn" onclick="terminateSession()">SİTEDEN ÇIK</button>
+            <button onclick="terminateSession()" style="background:transparent; color:#ff1e1e; border:none; margin-top:15px; cursor:pointer; font-family:'Orbitron'; font-size:0.7rem;">SİTEDEN ÇIK</button>
             <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">VAZGEÇ</p>
         </div>
     </div>
@@ -135,53 +152,77 @@
             </div>
         </nav>
 
-        <header style="padding: 20px 0 40px;">
+        <header style="padding: 40px 0;">
             <h1>ARENA</h1>
             <p style="text-align:center; color:var(--neon); font-family:'Orbitron'; font-size:0.7rem; letter-spacing:5px;">MISSION CONTROL HUB</p>
         </header>
 
         <div class="container">
-            <div class="game-card f1-card" onclick="location.href='/f1.html'"><h3>F1 REAKSİYON</h3><p>Hızını test et!</p></div>
-            <div class="game-card quiz-card" onclick="location.href='/quiz.html'"><h3>QUIZ ARENA</h3><p>Bilgini konuştur!</p></div>
-            <div class="game-card circle-card" onclick="location.href='/circle.html'"><h3>CIRCLE MASTER</h3><p>Daireni çiz!</p></div>
-            <div class="game-card battle-card" onclick="location.href='/battle.html'"><h3>POWER BATTLE</h3><p>Gücünü göster!</p></div>
-            <div class="game-card catcher-card" onclick="location.href='/catcher.html'"><h3>NEON CATCHER</h3><p>Hızlı yakala!</p></div>
-            <div class="game-card link-card" onclick="location.href='/link.html'"><h3>NEON LINK</h3><p>Devreyi kur!</p></div>
+            <div class="game-card f1-card" onclick="location.href='/f1.html'">
+                <h3>F1 REAKSİYON</h3>
+                <p>Işıklar söndüğünde reaksiyonunu göster!</p>
+                <div class="best-score-badge">BEST: <span id="best-f1">0.000s</span></div>
+            </div>
+            <div class="game-card quiz-card" onclick="location.href='/quiz.html'">
+                <h3>QUIZ ARENA</h3>
+                <p>Elektrik dünyasında rakiplerini bilgiyle ele!</p>
+                <div class="best-score-badge">BEST: <span id="best-quiz">0</span></div>
+            </div>
+            <div class="game-card circle-card" onclick="location.href='/circle.html'">
+                <h3>CIRCLE MASTER</h3>
+                <p>Hassasiyetini ve el becerini kanıtla!</p>
+                <div class="best-score-badge">BEST: <span id="best-circle">%0</span></div>
+            </div>
+            <div class="game-card battle-card" onclick="location.href='/battle.html'">
+                <h3>POWER BATTLE</h3>
+                <p>Güç barını en tepede yakala!</p>
+                <div class="best-score-badge">BEST: <span id="best-battle">0</span></div>
+            </div>
+            <div class="game-card catcher-card" onclick="location.href='/catcher.html'">
+                <h3>NEON CATCHER</h3>
+                <p>Hedefleri yakala, bombalardan kaç!</p>
+                <div class="best-score-badge">BEST: <span id="best-catcher">0</span></div>
+            </div>
+            <div class="game-card link-card" onclick="location.href='/link.html'">
+                <h3>NEON LINK</h3>
+                <p>Hatları çakıştırmadan devreyi tamamla!</p>
+                <div class="best-score-badge">BEST: <span id="best-link">0</span></div>
+            </div>
         </div>
+
         <footer>&copy; 2026 BAYRAM - AKU ELECTRICAL ENGINEERING</footer>
     </div>
 
     <script>
         let currentAvatar = '⚡';
 
+        function loadBestScores() {
+            document.getElementById('best-f1').innerText = localStorage.getItem('f1_best') || '0.000s';
+            document.getElementById('best-quiz').innerText = localStorage.getItem('quiz_best') || '0';
+            document.getElementById('best-circle').innerText = localStorage.getItem('circle_best') ? localStorage.getItem('circle_best') + '%' : '%0';
+            document.getElementById('best-battle').innerText = localStorage.getItem('battle_best') || '0';
+            document.getElementById('best-catcher').innerText = localStorage.getItem('catcher_best') || '0';
+            document.getElementById('best-link').innerText = localStorage.getItem('link_best') || '0';
+        }
+
         function checkUser() {
             try {
                 const userStr = localStorage.getItem('user');
                 if (!userStr) {
-                    showRegister();
+                    document.getElementById('register-screen').style.display = 'flex';
+                    document.getElementById('lobby-screen').style.display = 'none';
                 } else {
                     const user = JSON.parse(userStr);
-                    // Kritik kontrol: Eğer veri objesi eksikse (örn: sadece isim varsa) hata fırlat
-                    if (!user.name || !user.avatar) throw new Error("Eksik Veri");
-                    
                     document.getElementById('nav-name').innerText = user.name.toUpperCase();
                     document.getElementById('nav-avatar').innerText = user.avatar;
                     document.getElementById('register-screen').style.display = 'none';
                     document.getElementById('lobby-screen').style.display = 'flex';
+                    loadBestScores();
                 }
             } catch (e) {
-                console.error("Veri bozuk, temizleniyor...");
-                localStorage.removeItem('user'); // Bozuk veriyi imha et
-                showRegister();
+                localStorage.removeItem('user');
+                location.reload();
             }
-        }
-
-        function showRegister() {
-            document.getElementById('register-screen').style.display = 'flex';
-            document.getElementById('lobby-screen').style.display = 'none';
-            document.getElementById('cancel-edit').style.display = 'none';
-            document.getElementById('final-exit-btn').style.display = 'block';
-            document.getElementById('reg-title').innerText = "SİSTEME GİRİŞ";
         }
 
         function selectAvatar(icon, el) {
@@ -192,8 +233,8 @@
 
         function saveUser() {
             const name = document.getElementById('username-input').value.trim();
-            if (name.length < 2) return alert("Lütfen en az 2 karakter gir!");
-            localStorage.setItem('user', JSON.stringify({ name: name, avatar: currentAvatar }));
+            if (name.length < 2) return alert("Lütfen isim gir!");
+            localStorage.setItem('user', JSON.stringify({ name, avatar: currentAvatar }));
             checkUser();
         }
 
@@ -203,23 +244,20 @@
             document.getElementById('reg-title').innerText = "PROFİLİ DÜZENLE";
             document.getElementById('register-screen').style.display = 'flex';
             document.getElementById('cancel-edit').style.display = 'block';
-            document.getElementById('final-exit-btn').style.display = 'none';
         }
 
-        function closeRegister() { document.getElementById('register-screen').style.display = 'none'; }
-
         function logout() {
-            if(confirm("Siteden çıkış yapılacak. Emin misin?")) {
+            if(confirm("Siteden çıkış yapılsın mı?")) {
                 localStorage.removeItem('user');
                 location.reload();
             }
         }
 
         function terminateSession() {
-            if(confirm("Siteden ayrılmak istediğine emin misin?")) {
-                window.location.href = "https://www.google.com";
-            }
+            window.location.href = "https://www.google.com";
         }
+
+        function closeRegister() { document.getElementById('register-screen').style.display = 'none'; }
 
         window.onload = checkUser;
     </script>

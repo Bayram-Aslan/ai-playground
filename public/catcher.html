@@ -3,36 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON CATCHER | ARENA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <title>NEON CATCHER PRO | ARENA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff88; --bg: #050505; --danger: #ff1e1e; }
-        body { background: var(--bg); margin: 0; overflow: hidden; font-family: 'Orbitron', sans-serif; touch-action: none; }
-        canvas { display: block; cursor: crosshair; }
-        
-        .ui-top { position: absolute; top: 20px; left: 0; width: 100%; display: flex; justify-content: space-around; pointer-events: none; z-index: 10; }
-        .stat { font-size: 1.5rem; color: var(--neon); text-shadow: 0 0 10px rgba(0,255,136,0.5); }
-        
-        .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
-        .play-btn { background: var(--neon); color: black; border: none; padding: 20px 50px; font-size: 2rem; font-family: 'Orbitron'; cursor: pointer; border-radius: 15px; }
-        .home-link { margin-top: 25px; color: #555; text-decoration: none; }
+        :root { --neon: #00ff88; --bomb: #ff1e1e; --bg: #050505; }
+        body { 
+            margin: 0; background: var(--bg); color: white; 
+            font-family: 'Orbitron', sans-serif; overflow: hidden; 
+            touch-action: none; display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* LOBİYE DÖN BUTONU */
+        .back-nav {
+            position: fixed; top: 15px; left: 15px; z-index: 100;
+            text-decoration: none; color: white; font-size: 0.7rem;
+            border: 1px solid rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+        }
+
+        /* SKOR PANELİ - ARTIK GÖRÜNÜR! */
+        #score-board {
+            position: fixed; top: 20px; right: 20px; text-align: right; z-index: 100;
+            background: rgba(0, 255, 136, 0.1); padding: 10px 20px; 
+            border-radius: 10px; border: 1px solid var(--neon);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+        #score-val { font-size: 1.5rem; color: var(--neon); display: block; }
+        #best-val { font-size: 0.7rem; color: #888; }
+
+        canvas { background: radial-gradient(circle, #111 0%, #050505 100%); display: block; }
+
+        /* GAME OVER OVERLAY */
+        #overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .over-box { text-align: center; border: 2px solid var(--neon); padding: 40px; border-radius: 20px; background: #000; }
+        .btn-retry { 
+            background: var(--neon); color: black; border: none; padding: 15px 40px; 
+            font-family: 'Orbitron'; font-weight: 900; border-radius: 10px; cursor: pointer; margin-top: 20px;
+        }
+
+        /* EKRAN SARSILMA EFEKTİ */
+        .shake { animation: shake 0.3s; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            20% { transform: translate(-3px, 0); }
+            40% { transform: translate(3px, 2px); }
+            60% { transform: translate(-3px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0, 0); }
+        }
     </style>
 </head>
-<body>
-    <div class="ui-top">
-        <div id="score-val">SCORE: 0</div>
-        <div id="lives-val">LIVES: 3</div>
+<body id="game-body">
+
+    <a href="/" class="back-nav">LOBİYE DÖN</a>
+
+    <div id="score-board">
+        <span id="score-val">0</span>
+        <span id="best-val">BEST: 0</span>
     </div>
 
-    <div id="overlay" class="menu-overlay">
-        <h1 style="color:white; font-size: 3rem; margin-bottom: 10px;">NEON CATCHER</h1>
-        <p id="final-stat" style="color:var(--neon); margin-bottom: 30px;">HEDEFLERİ PATLAT, KIRMIZIDAN KAÇ!</p>
-        <button class="play-btn" onclick="startCatchGame()">BAŞLA</button>
-        <a href="/" class="home-link">LOBİYE DÖN</a>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay">
+        <div class="over-box">
+            <h1 style="color: var(--bomb); letter-spacing: 5px;">SİSTEM ÇÖKTÜ</h1>
+            <p id="final-score">SKOR: 0</p>
+            <button class="btn-retry" onclick="resetGame()">YENİDEN BAŞLAT</button>
+            <br>
+            <a href="/" style="color: #666; text-decoration: none; font-size: 0.8rem; margin-top: 20px; display: inline-block;">MENÜYE DÖN</a>
+        </div>
     </div>
 
-    <canvas id="catchCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const body = document.getElementById('game-body');
+        
+        let score = 0;
+        let highScore = localStorage.getItem('catcher_best') || 0;
+        let gameActive = true;
+        let playerWidth = 80;
+        let playerX = 0;
+        let items = [];
+        let speedMultiplier = 1;
 
-    <script src="games/catcher.js"></script>
+        document.getElementById('best-val').innerText = `BEST: ${highScore}`;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            playerX = canvas.width / 2 - playerWidth / 2;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // KONTROLLER
+        window.addEventListener('mousemove', (e) => playerX = e.clientX - playerWidth / 2);
+        window.addEventListener('touchmove', (e) => {
+            playerX = e.touches[0].clientX - playerWidth / 2;
+            e.preventDefault();
+        }, { passive: false });
+
+        class Item {
+            constructor() {
+                this.w = 30;
+                this.h = 30;
+                this.x = Math.random() * (canvas.width - this.w);
+                this.y = -50;
+                this.type = Math.random() > 0.2 ? 'neon' : 'bomb'; // %20 bomba ihtimali
+                this.speed = (3 + Math.random() * 4) * speedMultiplier;
+                this.rotation = 0;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.rotation += 0.05;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.w/2, this.y + this.h/2);
+                ctx.rotate(this.rotation);
+                
+                if (this.type === 'neon') {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#00ff88';
+                    ctx.fillStyle = '#00ff88';
+                    ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+                } else {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ff1e1e';
+                    ctx.fillStyle = '#ff1e1e';
+                    // Bomba üçgen olsun
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.h/2);
+                    ctx.lineTo(this.w/2, this.h/2);
+                    ctx.lineTo(-this.w/2, this.h/2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function spawn() {
+            if (gameActive) {
+                items.push(new Item());
+                setTimeout(spawn, 1000 / speedMultiplier);
+            }
+        }
+
+        function drawPlayer() {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#00ff88';
+            ctx.fillStyle = '#00ff88';
+            // Modern bir "yakalayıcı" çizimi
+            ctx.fillRect(playerX, canvas.height - 40, playerWidth, 10);
+            ctx.fillRect(playerX, canvas.height - 45, 5, 15);
+            ctx.fillRect(playerX + playerWidth - 5, canvas.height - 45, 5, 15);
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Arka plan ızgarası (Hafif)
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+
+            items.forEach((item, index) => {
+                item.update();
+                item.draw();
+
+                // Çarpışma Kontrolü
+                if (item.y + item.h > canvas.height - 40 && 
+                    item.x + item.w > playerX && 
+                    item.x < playerX + playerWidth) {
+                    
+                    if (item.type === 'neon') {
+                        score += 10;
+                        document.getElementById('score-val').innerText = score;
+                        speedMultiplier += 0.01; // Oyun yavaşça hızlanır
+                        items.splice(index, 1);
+                    } else {
+                        gameOver();
+                    }
+                }
+
+                // Ekrandan çıkma
+                if (item.y > canvas.height) items.splice(index, 1);
+            });
+
+            drawPlayer();
+            requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            body.classList.add('shake'); // Ekran sarsılması
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('catcher_best', highScore);
+            }
+
+            document.getElementById('final-score').innerText = `SKOR: ${score}`;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function resetGame() {
+            score = 0;
+            speedMultiplier = 1;
+            items = [];
+            gameActive = true;
+            body.classList.remove('shake');
+            document.getElementById('score-val').innerText = "0";
+            document.getElementById('overlay').style.display = 'none';
+            spawn();
+            update();
+        }
+
+        spawn();
+        update();
+    </script>
 </body>
 </html>
