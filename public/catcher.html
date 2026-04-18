@@ -3,45 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARENA | FINAL CATCHER</title>
+    <title>ARENA | ELITE CATCHER FINAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
-        body { margin: 0; background: var(--sky); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; }
+        body { margin: 0; padding: 0; background: var(--sky); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
 
         .game-nav {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 20px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            background: rgba(0,0,0,0.1); backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.15); box-sizing: border-box;
         }
-        #score-num { font-size: 3rem; color: #fff; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); font-weight: 900; }
-        #lives { font-size: 1.5rem; letter-spacing: 5px; }
+        #score-num { font-size: clamp(1.5rem, 5vw, 2.5rem); color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); font-weight: 900; }
+        #lives-display { font-size: clamp(1rem, 4vw, 1.5rem); letter-spacing: 5px; color: #ff3366; text-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-        canvas { display: block; }
+        canvas { display: block; position: absolute; top: 0; left: 0; }
 
         #overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
+            padding: 20px;
         }
-        .box { text-align: center; background: #fff; color: #000; padding: 50px; border-radius: 20px; width: 80%; max-width: 400px; }
-        .btn { background: #0099ff; color: #fff; border: none; padding: 15px 30px; font-family: 'Orbitron'; font-weight: 900; border-radius: 10px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .box { text-align: center; background: #fff; color: #000; padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .btn { background: #0099ff; color: #fff; border: none; padding: 15px; font-family: 'Orbitron'; font-weight: 900; border-radius: 12px; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1.1rem; }
     </style>
 </head>
 <body id="game-body">
 
     <div class="game-nav">
-        <a href="/" style="color:#fff; text-decoration:none; font-size:0.8rem; border:1px solid #fff; padding:5px 10px; border-radius:5px;">LOBİ</a>
+        <a href="/" style="color:#fff; text-decoration:none; font-size:0.8rem; border:1px solid #fff; padding:5px 12px; border-radius:8px;">LOBİ</a>
         <div id="score-num">0</div>
-        <div id="lives">❤❤❤</div>
+        <div id="lives-display">❤❤❤</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <div id="overlay">
         <div class="box">
-            <h1 style="margin:0;">OYUN BİTTİ</h1>
-            <p id="final-res" style="font-size: 3rem; margin: 10px 0;">0</p>
-            <button class="btn" onclick="resetGame()">TEKRAR DENE</button>
+            <h2 id="end-msg" style="margin:0;">OYUN BİTTİ</h2>
+            <p id="final-res" style="font-size: 3.5rem; margin: 15px 0; font-weight: 900; color: #0099ff;">0</p>
+            <button class="btn" onclick="resetGame()">YENİDEN DENE</button>
         </div>
     </div>
 
@@ -52,37 +53,41 @@
         
         let score = 0, lives = 3, gameActive = true;
         let elements = [], clouds = [], particles = [];
-        let speedBase = 3, spawnInterval = 1000, lastSpawn = 0;
+        let speedBase = 3.5, spawnInterval = 1000, lastSpawn = 0;
         let waterLevel = 50, targetWaterLevel = 50;
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            initClouds();
+        }
+
+        function initClouds() {
             clouds = [];
-            for(let i=0; i<5; i++) {
+            for(let i=0; i<4; i++) {
                 clouds.push({
                     x: Math.random() * canvas.width,
-                    y: 50 + Math.random() * 100,
-                    w: 120 + Math.random() * 100,
+                    y: 30 + Math.random() * 80,
+                    w: 100 + Math.random() * 100,
                     h: 40 + Math.random() * 20,
-                    s: 0.2 + Math.random() * 0.5
+                    s: 0.2 + Math.random() * 0.4
                 });
             }
         }
+
         window.addEventListener('resize', resize);
         resize();
 
-        // PATLAMA EFEKTİ (Yeni eklendi)
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
-                this.size = Math.random() * 5 + 2;
-                this.speedX = (Math.random() - 0.5) * 10;
-                this.speedY = (Math.random() - 0.5) * 10;
+                this.size = Math.random() * 6 + 2;
+                this.speedX = (Math.random() - 0.5) * 12;
+                this.speedY = (Math.random() - 0.5) * 12;
                 this.color = color;
                 this.alpha = 1;
             }
-            update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.03; }
+            update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.04; }
             draw() {
                 ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
@@ -92,12 +97,12 @@
 
         class RainDrop {
             constructor() {
-                this.size = 50; // PC İÇİN BÜYÜTÜLDÜ
+                this.size = clamp(canvas.width * 0.08, 35, 55); // Ekran boyutuna göre dinamik damla
                 this.x = Math.random() * (canvas.width - this.size);
-                this.y = -60;
+                this.y = -80;
                 this.type = Math.random() > 0.2 ? 'water' : 'acid';
-                this.speed = speedBase + Math.random() * 2;
-                this.color = this.type === 'water' ? '#fff' : '#ff8c00';
+                this.speed = speedBase + Math.random() * 2.5;
+                this.color = this.type === 'water' ? '#ffffff' : '#ff8c00';
             }
             draw() {
                 ctx.save();
@@ -111,6 +116,8 @@
             update() { this.y += this.speed; }
         }
 
+        function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+
         function handleInput(e) {
             if(!gameActive) return;
             const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
@@ -118,18 +125,22 @@
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                if(x >= el.x - 40 && x <= el.x + 40 && y >= el.y && y <= el.y + 70) {
-                    // Patlama Efekti Oluştur
-                    for(let j=0; j<10; j++) particles.push(new Particle(el.x, el.y + 30, el.color));
+                // Hitbox (Daha geniş tıklama alanı)
+                if(x >= el.x - 30 && x <= el.x + 30 && y >= el.y && y <= el.y + 70) {
+                    for(let j=0; j<12; j++) particles.push(new Particle(el.x, el.y + 20, el.color));
                     
                     if(el.type === 'water') {
                         score += 10;
-                        targetWaterLevel = Math.max(50, targetWaterLevel - 15);
+                        targetWaterLevel = Math.max(50, targetWaterLevel - 12);
+                        speedBase += 0.04; // Kademeli hızlanma
+                        spawnInterval = Math.max(400, spawnInterval - 5);
                         document.getElementById('score-num').innerText = score;
                     } else { 
-                        targetWaterLevel += 70;
+                        lives--; // TURUNCU CAN GÖTÜRÜR
+                        updateLives();
                         body.classList.add('shake');
                         setTimeout(() => body.classList.remove('shake'), 200);
+                        if(lives <= 0) gameOver("ASİT SİSTEMİ ÇÖKERTTİ");
                     }
                     elements.splice(i, 1);
                     break;
@@ -147,20 +158,19 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Bulutlar
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
             clouds.forEach(c => {
                 ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
                 c.x += c.s; if(c.x - c.w/2 > canvas.width) c.x = -c.w/2;
             });
 
-            waterLevel += (targetWaterLevel - waterLevel) * 0.05;
+            waterLevel += (targetWaterLevel - waterLevel) * 0.08;
 
-            if (time - lastSpawn > spawnInterval && elements.length < 12) {
+            if (time - lastSpawn > spawnInterval && elements.length < 15) {
                 elements.push(new RainDrop());
                 lastSpawn = time;
             }
 
-            // Partikülleri güncelle ve çiz
             particles.forEach((p, i) => {
                 p.update(); p.draw();
                 if(p.alpha <= 0) particles.splice(i, 1);
@@ -170,33 +180,41 @@
                 let el = elements[i];
                 el.update(); el.draw();
                 if(el.y > canvas.height - waterLevel) {
-                    if(el.type === 'water') targetWaterLevel += 25;
+                    if(el.type === 'water') targetWaterLevel += 25; // Normal damla kaçarsa su yükselir
                     elements.splice(i, 1);
                 }
             }
 
             // SUYU ÇİZ
-            ctx.fillStyle = 'rgba(0, 153, 255, 0.7)';
+            ctx.fillStyle = 'rgba(0, 153, 255, 0.75)';
             ctx.fillRect(0, canvas.height - waterLevel, canvas.width, waterLevel);
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath();
-            for(let i=0; i<canvas.width; i+=20) {
-                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/300 + i/50)*5);
+            for(let i=0; i<canvas.width; i+=25) {
+                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/250 + i/60)*6);
             }
             ctx.stroke();
 
-            if(waterLevel >= canvas.height * 0.75) gameOver();
+            // TAŞMA KONTROLÜ
+            if(waterLevel >= canvas.height * 0.8) gameOver("ŞEHİR SULAR ALTINDA");
+
             requestAnimationFrame(update);
         }
 
-        function gameOver() {
+        function updateLives() {
+            document.getElementById('lives-display').innerText = "❤".repeat(Math.max(0, lives));
+        }
+
+        function gameOver(msg) {
             gameActive = false;
+            document.getElementById('end-msg').innerText = msg;
             document.getElementById('final-res').innerText = score;
             document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
-            score = 0; waterLevel = 50; targetWaterLevel = 50; speedBase = 3; elements = []; particles = [];
-            gameActive = true;
+            score = 0; lives = 3; waterLevel = 50; targetWaterLevel = 50; speedBase = 3.5; spawnInterval = 1000;
+            elements = []; particles = [];
+            gameActive = true; updateLives();
             document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
             requestAnimationFrame(update);
