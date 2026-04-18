@@ -4,86 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1 ARENA | NEURAL INTERFACE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --f1-red: #ff1e1e; --bg: #030303; --neon: #00ff88; --glass: rgba(15, 15, 15, 0.95); }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* Arka Plan Efekti */
+        body { 
+            background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
+            margin: 0; display: flex; align-items: center; justify-content: center; 
+            min-height: 100vh; overflow-x: hidden;
+        }
+
         .grid-bg { position: fixed; inset: 0; background-image: radial-gradient(circle at center, #111 0%, #000 100%); z-index: -1; }
 
-        /* Paneller - Gelişmiş Tasarım */
-        .panel { background: var(--glass); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
-        
-        /* Sol Panel - HALL OF FAME */
-        .stats-left { position: absolute; left: 40px; width: 260px; border-left: 4px solid var(--neon); }
-        
-        /* Sağ Panel - MISSION LOGS */
-        .history-right { position: absolute; right: 40px; width: 240px; max-height: 500px; border-right: 4px solid var(--f1-red); overflow-y: auto; }
+        /* Konteynır Yapısı */
+        .wrapper {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; max-width: 1400px; gap: 30px; padding: 20px;
+        }
 
-        .title { font-family: 'Orbitron'; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; text-align: center; }
-        .neon-text { color: var(--neon); text-shadow: 0 0 10px rgba(0,255,136,0.3); }
-        .red-text { color: var(--f1-red); text-shadow: 0 0 10px rgba(255,30,30,0.3); }
+        .panel { 
+            background: var(--glass); border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 12px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+            backdrop-filter: blur(10px); width: 260px;
+        }
+        
+        .title { 
+            font-family: 'Orbitron'; font-size: 0.85rem; letter-spacing: 2px; 
+            text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 10px; text-align: center; 
+        }
 
-        /* Liste Elemanları */
         .list-item { display: flex; justify-content: space-between; padding: 10px 0; font-family: 'Orbitron'; font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
-        /* Merkez Alanı */
-        .game-center { text-align: center; width: 500px; }
-        #status { font-family: 'Orbitron'; font-size: 1.3rem; margin-bottom: 20px; letter-spacing: 3px; color: var(--neon); }
-        #timer { font-family: 'Orbitron'; font-size: 7rem; font-weight: 900; color: rgba(255,255,255,0.03); margin: 20px 0; }
+        /* Merkez Oyun Alanı */
+        .game-center { text-align: center; flex: 1; max-width: 500px; }
+        #status { font-family: 'Orbitron'; font-size: 1.2rem; margin-bottom: 20px; letter-spacing: 2px; color: var(--neon); min-height: 1.5em; }
+        #timer { font-family: 'Orbitron'; font-size: 6rem; font-weight: 900; color: rgba(255,255,255,0.05); margin: 10px 0; }
 
-        /* F1 Işıkları */
-        .lights-box { display: flex; gap: 15px; background: #0a0a0a; padding: 30px; border-radius: 15px; border: 2px solid #222; margin-bottom: 40px; justify-content: center; }
-        .lamp-col { display: flex; flex-direction: column; gap: 12px; }
-        .lamp { width: 55px; height: 55px; background: #1a1a1a; border-radius: 50%; border: 3px solid #000; box-shadow: inset 0 0 10px #000; }
-        .lamp.red.on { background: var(--f1-red); box-shadow: 0 0 40px var(--f1-red), inset 0 0 15px rgba(0,0,0,0.5); }
-
-        /* ANA BUTON - Font Sorunu Çözüldü */
-        .main-btn { 
-            background: #fff; color: #000; border: none; padding: 15px 0; width: 300px; 
-            font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 2.2rem; 
-            border-radius: 8px; cursor: pointer; transition: 0.1s;
-            text-transform: uppercase; letter-spacing: 1px;
+        .lights-box { 
+            display: flex; gap: 15px; background: #0a0a0a; padding: 25px; 
+            border-radius: 15px; border: 2px solid #222; margin-bottom: 30px; justify-content: center; 
         }
-        .main-btn:active { transform: scale(0.96); opacity: 0.9; }
+        .lamp-col { display: flex; flex-direction: column; gap: 10px; }
+        .lamp { width: 50px; height: 50px; background: #1a1a1a; border-radius: 50%; border: 3px solid #000; }
+        .lamp.red.on { background: var(--f1-red); box-shadow: 0 0 35px var(--f1-red); }
 
-        .btn-reset { background: var(--f1-red); color: #fff; margin-top: 20px; display: none; padding: 12px 40px; font-size: 1.2rem; }
+        /* Ana Buton */
+        .main-btn { 
+            background: #fff; color: #000; border: none; padding: 18px 0; width: 100%; 
+            max-width: 320px; font-family: 'Rajdhani', sans-serif; font-weight: 800; 
+            font-size: 2.2rem; border-radius: 10px; cursor: pointer; text-transform: uppercase;
+        }
+        .btn-reset { background: var(--f1-red); color: #fff; margin-top: 20px; display: none; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .back-nav { position: absolute; bottom: 20px; color: #444; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; }
 
-        .back-nav { position: absolute; bottom: 30px; color: #444; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px; }
+        /* --- MOBİL UYUM (RESPONSIVE) --- */
+        @media (max-width: 1024px) {
+            .wrapper { flex-direction: column; padding-top: 80px; }
+            .panel { width: 90%; max-width: 350px; }
+            .stats-left { order: 2; border-left: 4px solid var(--neon); }
+            .game-center { order: 1; margin-bottom: 20px; }
+            .history-right { order: 3; border-right: 4px solid var(--f1-red); }
+            #timer { font-size: 4.5rem; }
+            .lamp { width: 40px; height: 40px; }
+            .back-nav { position: relative; margin: 30px 0; }
+        }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
 
-    <div class="panel stats-left">
-        <div class="title neon-text">Neural Hall of Fame</div>
-        <div id="leaderboard"></div>
-    </div>
-
-    <div class="panel history-right">
-        <div class="title red-text">Mission Logs</div>
-        <div id="history-list"></div>
-    </div>
-
-    <div class="game-center">
-        <div id="status">SİSTEM ÇEVRİMİÇİ</div>
-        <div id="timer">0.000</div>
-        
-        <div class="lights-box">
-            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
-            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
-            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
-            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
-            <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+    <div class="wrapper">
+        <div class="panel stats-left">
+            <div class="title" style="color:var(--neon)">Hall of Fame</div>
+            <div id="leaderboard"></div>
         </div>
 
-        <button id="trigger" class="main-btn" onmousedown="handleAction()">BAŞLAT</button>
-        <button id="reset-btn" class="main-btn btn-reset" onclick="resetUI()">SİSTEMİ SIFIRLA</button>
+        <div class="game-center">
+            <div id="status">SİSTEM ÇEVRİMİÇİ</div>
+            <div id="timer">0.000</div>
+            
+            <div class="lights-box">
+                <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+                <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+                <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+                <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+                <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
+            </div>
+
+            <button id="trigger" class="main-btn" onmousedown="handleAction()">BAŞLAT</button>
+            <button id="reset-btn" class="main-btn btn-reset" onclick="resetUI()">Sıfırla</button>
+        </div>
+
+        <div class="panel history-right">
+            <div class="title" style="color:var(--f1-red)">Mission Logs</div>
+            <div id="history-list" style="max-height: 300px; overflow-y: auto;"></div>
+        </div>
     </div>
 
     <a href="/" class="back-nav">← RETURN TO LOBBY</a>
