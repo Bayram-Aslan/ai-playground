@@ -91,7 +91,6 @@
             border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; width: 100%; 
             margin-top: 15px; font-size: 0.8rem; transition: 0.3s;
         }
-        .btn-close-app:hover { background: rgba(255,30,30,0.1); }
         
         header h1 { 
             font-family: 'Orbitron'; font-size: 3.5rem; letter-spacing:15px; margin:0; 
@@ -119,7 +118,6 @@
                 <div class="avatar-item" onclick="selectAvatar('🛰️', this)">🛰️</div>
             </div>
             <button class="btn-save" onclick="saveUser()">SİSTEMİ BAŞLAT</button>
-            
             <button class="btn-close-app" id="final-exit-btn" onclick="terminateSession()">SİTEDEN ÇIK</button>
             <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">VAZGEÇ</p>
         </div>
@@ -143,55 +141,47 @@
         </header>
 
         <div class="container">
-            <div class="game-card f1-card" onclick="location.href='/f1.html'">
-                <h3>F1 REAKSİYON</h3>
-                <p>Işıklar söndüğünde reaksiyonunu göster!</p>
-            </div>
-            <div class="game-card quiz-card" onclick="location.href='/quiz.html'">
-                <h3>QUIZ ARENA</h3>
-                <p>Elektrik dünyasında rakiplerini bilgiyle ele!</p>
-            </div>
-            <div class="game-card circle-card" onclick="location.href='/circle.html'">
-                <h3>CIRCLE MASTER</h3>
-                <p>Hassasiyetini ve el becerini kanıtla!</p>
-            </div>
-            <div class="game-card battle-card" onclick="location.href='/battle.html'">
-                <h3>POWER BATTLE</h3>
-                <p>Güç barını en tepede yakala, vuruşunu yap!</p>
-            </div>
-            <div class="game-card catcher-card" onclick="location.href='/catcher.html'">
-                <h3>NEON CATCHER</h3>
-                <p>Hedefleri yakala, bombalardan kaç!</p>
-            </div>
-            <div class="game-card link-card" onclick="location.href='/link.html'">
-                <h3>NEON LINK</h3>
-                <p>Hatları çakıştırmadan devreyi tamamla!</p>
-            </div>
+            <div class="game-card f1-card" onclick="location.href='/f1.html'"><h3>F1 REAKSİYON</h3><p>Hızını test et!</p></div>
+            <div class="game-card quiz-card" onclick="location.href='/quiz.html'"><h3>QUIZ ARENA</h3><p>Bilgini konuştur!</p></div>
+            <div class="game-card circle-card" onclick="location.href='/circle.html'"><h3>CIRCLE MASTER</h3><p>Daireni çiz!</p></div>
+            <div class="game-card battle-card" onclick="location.href='/battle.html'"><h3>POWER BATTLE</h3><p>Gücünü göster!</p></div>
+            <div class="game-card catcher-card" onclick="location.href='/catcher.html'"><h3>NEON CATCHER</h3><p>Hızlı yakala!</p></div>
+            <div class="game-card link-card" onclick="location.href='/link.html'"><h3>NEON LINK</h3><p>Devreyi kur!</p></div>
         </div>
-
-        <footer>
-            &copy; 2026 BAYRAM - AKU ELECTRICAL ENGINEERING
-        </footer>
+        <footer>&copy; 2026 BAYRAM - AKU ELECTRICAL ENGINEERING</footer>
     </div>
 
     <script>
         let currentAvatar = '⚡';
 
         function checkUser() {
-            const userStr = localStorage.getItem('user');
-            if (!userStr) {
-                document.getElementById('register-screen').style.display = 'flex';
-                document.getElementById('lobby-screen').style.display = 'none';
-                document.getElementById('cancel-edit').style.display = 'none';
-                document.getElementById('final-exit-btn').style.display = 'block'; // Girişte çıkış butonu gözüksün
-                document.getElementById('reg-title').innerText = "SİSTEME GİRİŞ";
-            } else {
-                const user = JSON.parse(userStr);
-                document.getElementById('nav-name').innerText = user.name.toUpperCase();
-                document.getElementById('nav-avatar').innerText = user.avatar;
-                document.getElementById('register-screen').style.display = 'none';
-                document.getElementById('lobby-screen').style.display = 'flex';
+            try {
+                const userStr = localStorage.getItem('user');
+                if (!userStr) {
+                    showRegister();
+                } else {
+                    const user = JSON.parse(userStr);
+                    // Kritik kontrol: Eğer veri objesi eksikse (örn: sadece isim varsa) hata fırlat
+                    if (!user.name || !user.avatar) throw new Error("Eksik Veri");
+                    
+                    document.getElementById('nav-name').innerText = user.name.toUpperCase();
+                    document.getElementById('nav-avatar').innerText = user.avatar;
+                    document.getElementById('register-screen').style.display = 'none';
+                    document.getElementById('lobby-screen').style.display = 'flex';
+                }
+            } catch (e) {
+                console.error("Veri bozuk, temizleniyor...");
+                localStorage.removeItem('user'); // Bozuk veriyi imha et
+                showRegister();
             }
+        }
+
+        function showRegister() {
+            document.getElementById('register-screen').style.display = 'flex';
+            document.getElementById('lobby-screen').style.display = 'none';
+            document.getElementById('cancel-edit').style.display = 'none';
+            document.getElementById('final-exit-btn').style.display = 'block';
+            document.getElementById('reg-title').innerText = "SİSTEME GİRİŞ";
         }
 
         function selectAvatar(icon, el) {
@@ -202,7 +192,7 @@
 
         function saveUser() {
             const name = document.getElementById('username-input').value.trim();
-            if (name.length < 2) return alert("Lütfen en az 2 karakterlik bir isim gir!");
+            if (name.length < 2) return alert("Lütfen en az 2 karakter gir!");
             localStorage.setItem('user', JSON.stringify({ name: name, avatar: currentAvatar }));
             checkUser();
         }
@@ -213,12 +203,10 @@
             document.getElementById('reg-title').innerText = "PROFİLİ DÜZENLE";
             document.getElementById('register-screen').style.display = 'flex';
             document.getElementById('cancel-edit').style.display = 'block';
-            document.getElementById('final-exit-btn').style.display = 'none'; // Düzenleme yaparken çıkış butonu gizlensin
+            document.getElementById('final-exit-btn').style.display = 'none';
         }
 
-        function closeRegister() {
-            document.getElementById('register-screen').style.display = 'none';
-        }
+        function closeRegister() { document.getElementById('register-screen').style.display = 'none'; }
 
         function logout() {
             if(confirm("Siteden çıkış yapılacak. Emin misin?")) {
@@ -228,8 +216,8 @@
         }
 
         function terminateSession() {
-            if(confirm("Siteden ayrılmak istediğinize emin misiniz?")) {
-                window.location.href = "https://www.google.com"; // Veya istediğin bir veda sayfası
+            if(confirm("Siteden ayrılmak istediğine emin misin?")) {
+                window.location.href = "https://www.google.com";
             }
         }
 
