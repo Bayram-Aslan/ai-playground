@@ -3,75 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON CATCHER | ARENA</title>
+    <title>ARENA | FINAL CATCHER</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff88; --bomb: #ff1e1e; --bg: #050505; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; }
+        :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
+        body { margin: 0; background: var(--sky); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; }
 
-        /* ÜST BİLGİ PANELİ */
         .game-nav {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-sizing: border-box; z-index: 100;
+            position: fixed; top: 0; left: 0; width: 100%; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            background: rgba(0,0,0,0.1); backdrop-filter: blur(5px);
         }
-        #stats { text-align: right; }
-        #score-num { font-size: 2rem; color: var(--neon); text-shadow: 0 0 10px var(--neon); display: block; }
-        #lives-display { color: var(--bomb); font-size: 1.2rem; letter-spacing: 3px; }
+        #score-num { font-size: 3rem; color: #fff; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); font-weight: 900; }
+        #lives { font-size: 1.5rem; letter-spacing: 5px; }
 
         canvas { display: block; }
 
-        /* BİTİŞ PANELİ (OVERLAY) */
         #overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
-            backdrop-filter: blur(8px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
         }
-        .result-box { 
-            text-align: center; border: 2px solid var(--neon); padding: 50px; 
-            border-radius: 20px; background: #000; box-shadow: 0 0 40px rgba(0,255,136,0.1);
-            max-width: 350px; width: 85%;
-        }
-        .btn-retry { 
-            background: var(--neon); color: black; border: none; padding: 15px; 
-            font-family: 'Orbitron'; font-weight: 900; border-radius: 8px; 
-            cursor: pointer; width: 100%; font-size: 1rem; margin-top: 25px;
-            transition: 0.3s;
-        }
-        .btn-retry:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon); }
-        
-        .btn-lobby {
-            background: transparent; color: #666; border: 1px solid #333; padding: 12px; 
-            font-family: 'Orbitron'; border-radius: 8px; cursor: pointer; 
-            width: 100%; font-size: 0.8rem; margin-top: 15px; transition: 0.3s;
-        }
-        .btn-lobby:hover { color: white; border-color: white; }
-
-        .shake { animation: shake 0.2s; }
-        @keyframes shake { 0% { transform:translate(3px,3px); } 50% { transform:translate(-3px,-3px); } 100% { transform:translate(0,0); } }
+        .box { text-align: center; background: #fff; color: #000; padding: 50px; border-radius: 20px; width: 80%; max-width: 400px; }
+        .btn { background: #0099ff; color: #fff; border: none; padding: 15px 30px; font-family: 'Orbitron'; font-weight: 900; border-radius: 10px; cursor: pointer; margin-top: 20px; width: 100%; }
     </style>
 </head>
 <body id="game-body">
 
     <div class="game-nav">
-        <div style="font-size: 0.6rem; color: #444; font-family: 'Orbitron';">ARENA // NEON_CATCHER</div>
-        <div id="stats">
-            <span id="score-num">0</span>
-            <div id="lives-display">❤❤❤</div>
-        </div>
+        <a href="/" style="color:#fff; text-decoration:none; font-size:0.8rem; border:1px solid #fff; padding:5px 10px; border-radius:5px;">LOBİ</a>
+        <div id="score-num">0</div>
+        <div id="lives">❤❤❤</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <div id="overlay">
-        <div class="result-box">
-            <h1 id="fail-title" style="color:var(--bomb); margin:0; font-size: 1.8rem; letter-spacing: 2px;">SİSTEM DURDU</h1>
-            <div style="margin: 30px 0;">
-                <p style="color: #666; font-size: 0.8rem; margin: 0;">TOPLAM SKOR</p>
-                <p id="final-res" style="font-size: 3rem; color: var(--neon); margin: 5px 0; text-shadow: 0 0 15px var(--neon);">0</p>
-            </div>
-            <button class="btn-retry" onclick="resetGame()">YENİDEN BAŞLAT</button>
-            <button class="btn-lobby" onclick="location.href='/'">MENÜYE DÖN</button>
+        <div class="box">
+            <h1 style="margin:0;">OYUN BİTTİ</h1>
+            <p id="final-res" style="font-size: 3rem; margin: 10px 0;">0</p>
+            <button class="btn" onclick="resetGame()">TEKRAR DENE</button>
         </div>
     </div>
 
@@ -80,52 +50,62 @@
         const ctx = canvas.getContext('2d');
         const body = document.getElementById('game-body');
         
-        let score = 0;
-        let lives = 3;
-        let gameActive = true;
-        let elements = [];
-        let particles = [];
-        let speedBase = 3; 
-        let lastSpawn = 0;
-        let spawnInterval = 1000;
+        let score = 0, lives = 3, gameActive = true;
+        let elements = [], clouds = [], particles = [];
+        let speedBase = 3, spawnInterval = 1000, lastSpawn = 0;
+        let waterLevel = 50, targetWaterLevel = 50;
 
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            clouds = [];
+            for(let i=0; i<5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: 50 + Math.random() * 100,
+                    w: 120 + Math.random() * 100,
+                    h: 40 + Math.random() * 20,
+                    s: 0.2 + Math.random() * 0.5
+                });
+            }
+        }
         window.addEventListener('resize', resize);
         resize();
 
+        // PATLAMA EFEKTİ (Yeni eklendi)
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = (Math.random() - 0.5) * 8;
-                this.speedY = (Math.random() - 0.5) * 8;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = (Math.random() - 0.5) * 10;
+                this.speedY = (Math.random() - 0.5) * 10;
                 this.color = color;
                 this.alpha = 1;
             }
             update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.03; }
             draw() {
-                ctx.save(); ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
             }
         }
 
-        class NeonElement {
+        class RainDrop {
             constructor() {
-                this.size = 45;
+                this.size = 50; // PC İÇİN BÜYÜTÜLDÜ
                 this.x = Math.random() * (canvas.width - this.size);
                 this.y = -60;
-                this.type = Math.random() > 0.25 ? 'neon' : 'bomb';
-                this.speed = speedBase + Math.random() * 1.5;
-                this.color = this.type === 'neon' ? '#00ff88' : '#ff1e1e';
+                this.type = Math.random() > 0.2 ? 'water' : 'acid';
+                this.speed = speedBase + Math.random() * 2;
+                this.color = this.type === 'water' ? '#fff' : '#ff8c00';
             }
             draw() {
                 ctx.save();
-                ctx.shadowBlur = 10; ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
-                if(this.type === 'neon') ctx.fillRect(this.x, this.y, this.size, this.size);
-                else { ctx.beginPath(); ctx.arc(this.x + 22, this.y + 22, 18, 0, Math.PI*2); ctx.fill(); }
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.bezierCurveTo(this.x - this.size/2, this.y + this.size, this.x + this.size/2, this.y + this.size, this.x, this.y);
+                ctx.fill();
                 ctx.restore();
             }
             update() { this.y += this.speed; }
@@ -138,15 +118,20 @@
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                if(x >= el.x - 20 && x <= el.x + el.size + 20 && y >= el.y - 20 && y <= el.y + el.size + 20) {
-                    if(el.type === 'neon') {
+                if(x >= el.x - 40 && x <= el.x + 40 && y >= el.y && y <= el.y + 70) {
+                    // Patlama Efekti Oluştur
+                    for(let j=0; j<10; j++) particles.push(new Particle(el.x, el.y + 30, el.color));
+                    
+                    if(el.type === 'water') {
                         score += 10;
-                        for(let j=0; j<10; j++) particles.push(new Particle(el.x + 22, el.y + 22, '#00ff88'));
-                        elements.splice(i, 1);
-                        speedBase = 3 + Math.log10(score + 1) * 2;
-                        spawnInterval = Math.max(400, 1000 - Math.log10(score + 1) * 200);
+                        targetWaterLevel = Math.max(50, targetWaterLevel - 15);
                         document.getElementById('score-num').innerText = score;
-                    } else { gameOver("BOMBA PATLADI"); }
+                    } else { 
+                        targetWaterLevel += 70;
+                        body.classList.add('shake');
+                        setTimeout(() => body.classList.remove('shake'), 200);
+                    }
+                    elements.splice(i, 1);
                     break;
                 }
             }
@@ -157,13 +142,25 @@
 
         function update(time) {
             if(!gameActive) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Bulutlar
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            clouds.forEach(c => {
+                ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
+                c.x += c.s; if(c.x - c.w/2 > canvas.width) c.x = -c.w/2;
+            });
+
+            waterLevel += (targetWaterLevel - waterLevel) * 0.05;
 
             if (time - lastSpawn > spawnInterval && elements.length < 12) {
-                elements.push(new NeonElement());
+                elements.push(new RainDrop());
                 lastSpawn = time;
             }
 
+            // Partikülleri güncelle ve çiz
             particles.forEach((p, i) => {
                 p.update(); p.draw();
                 if(p.alpha <= 0) particles.splice(i, 1);
@@ -172,38 +169,34 @@
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
                 el.update(); el.draw();
-                if(el.y > canvas.height) {
-                    if(el.type === 'neon') {
-                        lives--;
-                        updateLives();
-                        body.classList.add('shake');
-                        setTimeout(() => body.classList.remove('shake'), 200);
-                        if(lives <= 0) gameOver("SİSTEM ÇÖKTÜ");
-                    }
+                if(el.y > canvas.height - waterLevel) {
+                    if(el.type === 'water') targetWaterLevel += 25;
                     elements.splice(i, 1);
                 }
             }
+
+            // SUYU ÇİZ
+            ctx.fillStyle = 'rgba(0, 153, 255, 0.7)';
+            ctx.fillRect(0, canvas.height - waterLevel, canvas.width, waterLevel);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let i=0; i<canvas.width; i+=20) {
+                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/300 + i/50)*5);
+            }
+            ctx.stroke();
+
+            if(waterLevel >= canvas.height * 0.75) gameOver();
             requestAnimationFrame(update);
         }
 
-        function updateLives() {
-            document.getElementById('lives-display').innerText = "❤".repeat(lives);
-        }
-
-        function gameOver(reason) {
+        function gameOver() {
             gameActive = false;
-            // Best Score Kaydı
-            const best = localStorage.getItem('catcher_best') || 0;
-            if(score > best) localStorage.setItem('catcher_best', score);
-            
-            document.getElementById('fail-title').innerText = reason;
             document.getElementById('final-res').innerText = score;
             document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
-            score = 0; lives = 3; speedBase = 3; elements = []; particles = [];
-            gameActive = true; updateLives();
+            score = 0; waterLevel = 50; targetWaterLevel = 50; speedBase = 3; elements = []; particles = [];
+            gameActive = true;
             document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
             requestAnimationFrame(update);
