@@ -3,77 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON CATCHER PRO | ARENA</title>
+    <title>NEON CATCHER | ARENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --neon: #00ff88; --bomb: #ff1e1e; --bg: #050505; }
-        body { 
-            margin: 0; background: var(--bg); color: white; 
-            font-family: 'Orbitron', sans-serif; overflow: hidden; 
-            touch-action: none; display: flex; flex-direction: column; align-items: center;
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; }
+
+        /* ÜST BİLGİ PANELİ */
+        .game-nav {
+            position: fixed; top: 0; left: 0; width: 100%; padding: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; z-index: 100;
         }
+        #stats { text-align: right; }
+        #score-num { font-size: 2rem; color: var(--neon); text-shadow: 0 0 10px var(--neon); display: block; }
+        #lives-display { color: var(--bomb); font-size: 1.2rem; letter-spacing: 3px; }
 
-        /* LOBİYE DÖN BUTONU */
-        .back-nav {
-            position: fixed; top: 15px; left: 15px; z-index: 100;
-            text-decoration: none; color: white; font-size: 0.7rem;
-            border: 1px solid rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-        }
+        canvas { display: block; }
 
-        /* SKOR PANELİ - ARTIK GÖRÜNÜR! */
-        #score-board {
-            position: fixed; top: 20px; right: 20px; text-align: right; z-index: 100;
-            background: rgba(0, 255, 136, 0.1); padding: 10px 20px; 
-            border-radius: 10px; border: 1px solid var(--neon);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-        }
-        #score-val { font-size: 1.5rem; color: var(--neon); display: block; }
-        #best-val { font-size: 0.7rem; color: #888; }
-
-        canvas { background: radial-gradient(circle, #111 0%, #050505 100%); display: block; }
-
-        /* GAME OVER OVERLAY */
+        /* BİTİŞ PANELİ (OVERLAY) */
         #overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(8px);
         }
-        .over-box { text-align: center; border: 2px solid var(--neon); padding: 40px; border-radius: 20px; background: #000; }
+        .result-box { 
+            text-align: center; border: 2px solid var(--neon); padding: 50px; 
+            border-radius: 20px; background: #000; box-shadow: 0 0 40px rgba(0,255,136,0.1);
+            max-width: 350px; width: 85%;
+        }
         .btn-retry { 
-            background: var(--neon); color: black; border: none; padding: 15px 40px; 
-            font-family: 'Orbitron'; font-weight: 900; border-radius: 10px; cursor: pointer; margin-top: 20px;
+            background: var(--neon); color: black; border: none; padding: 15px; 
+            font-family: 'Orbitron'; font-weight: 900; border-radius: 8px; 
+            cursor: pointer; width: 100%; font-size: 1rem; margin-top: 25px;
+            transition: 0.3s;
         }
+        .btn-retry:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon); }
+        
+        .btn-lobby {
+            background: transparent; color: #666; border: 1px solid #333; padding: 12px; 
+            font-family: 'Orbitron'; border-radius: 8px; cursor: pointer; 
+            width: 100%; font-size: 0.8rem; margin-top: 15px; transition: 0.3s;
+        }
+        .btn-lobby:hover { color: white; border-color: white; }
 
-        /* EKRAN SARSILMA EFEKTİ */
-        .shake { animation: shake 0.3s; }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            20% { transform: translate(-3px, 0); }
-            40% { transform: translate(3px, 2px); }
-            60% { transform: translate(-3px, 1px); }
-            80% { transform: translate(1px, -1px); }
-            100% { transform: translate(0, 0); }
-        }
+        .shake { animation: shake 0.2s; }
+        @keyframes shake { 0% { transform:translate(3px,3px); } 50% { transform:translate(-3px,-3px); } 100% { transform:translate(0,0); } }
     </style>
 </head>
 <body id="game-body">
 
-    <a href="/" class="back-nav">LOBİYE DÖN</a>
-
-    <div id="score-board">
-        <span id="score-val">0</span>
-        <span id="best-val">BEST: 0</span>
+    <div class="game-nav">
+        <div style="font-size: 0.6rem; color: #444; font-family: 'Orbitron';">ARENA // NEON_CATCHER</div>
+        <div id="stats">
+            <span id="score-num">0</span>
+            <div id="lives-display">❤❤❤</div>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <div id="overlay">
-        <div class="over-box">
-            <h1 style="color: var(--bomb); letter-spacing: 5px;">SİSTEM ÇÖKTÜ</h1>
-            <p id="final-score">SKOR: 0</p>
+        <div class="result-box">
+            <h1 id="fail-title" style="color:var(--bomb); margin:0; font-size: 1.8rem; letter-spacing: 2px;">SİSTEM DURDU</h1>
+            <div style="margin: 30px 0;">
+                <p style="color: #666; font-size: 0.8rem; margin: 0;">TOPLAM SKOR</p>
+                <p id="final-res" style="font-size: 3rem; color: var(--neon); margin: 5px 0; text-shadow: 0 0 15px var(--neon);">0</p>
+            </div>
             <button class="btn-retry" onclick="resetGame()">YENİDEN BAŞLAT</button>
-            <br>
-            <a href="/" style="color: #666; text-decoration: none; font-size: 0.8rem; margin-top: 20px; display: inline-block;">MENÜYE DÖN</a>
+            <button class="btn-lobby" onclick="location.href='/'">MENÜYE DÖN</button>
         </div>
     </div>
 
@@ -83,153 +81,135 @@
         const body = document.getElementById('game-body');
         
         let score = 0;
-        let highScore = localStorage.getItem('catcher_best') || 0;
+        let lives = 3;
         let gameActive = true;
-        let playerWidth = 80;
-        let playerX = 0;
-        let items = [];
-        let speedMultiplier = 1;
+        let elements = [];
+        let particles = [];
+        let speedBase = 3; 
+        let lastSpawn = 0;
+        let spawnInterval = 1000;
 
-        document.getElementById('best-val').innerText = `BEST: ${highScore}`;
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            playerX = canvas.width / 2 - playerWidth / 2;
-        }
-
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
 
-        // KONTROLLER
-        window.addEventListener('mousemove', (e) => playerX = e.clientX - playerWidth / 2);
-        window.addEventListener('touchmove', (e) => {
-            playerX = e.touches[0].clientX - playerWidth / 2;
-            e.preventDefault();
-        }, { passive: false });
-
-        class Item {
-            constructor() {
-                this.w = 30;
-                this.h = 30;
-                this.x = Math.random() * (canvas.width - this.w);
-                this.y = -50;
-                this.type = Math.random() > 0.2 ? 'neon' : 'bomb'; // %20 bomba ihtimali
-                this.speed = (3 + Math.random() * 4) * speedMultiplier;
-                this.rotation = 0;
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 8;
+                this.speedY = (Math.random() - 0.5) * 8;
+                this.color = color;
+                this.alpha = 1;
             }
-
-            update() {
-                this.y += this.speed;
-                this.rotation += 0.05;
-            }
-
+            update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.03; }
             draw() {
-                ctx.save();
-                ctx.translate(this.x + this.w/2, this.y + this.h/2);
-                ctx.rotate(this.rotation);
-                
-                if (this.type === 'neon') {
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#00ff88';
-                    ctx.fillStyle = '#00ff88';
-                    ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
-                } else {
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = '#ff1e1e';
-                    ctx.fillStyle = '#ff1e1e';
-                    // Bomba üçgen olsun
-                    ctx.beginPath();
-                    ctx.moveTo(0, -this.h/2);
-                    ctx.lineTo(this.w/2, this.h/2);
-                    ctx.lineTo(-this.w/2, this.h/2);
-                    ctx.closePath();
-                    ctx.fill();
-                }
+                ctx.save(); ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
                 ctx.restore();
             }
         }
 
-        function spawn() {
-            if (gameActive) {
-                items.push(new Item());
-                setTimeout(spawn, 1000 / speedMultiplier);
+        class NeonElement {
+            constructor() {
+                this.size = 45;
+                this.x = Math.random() * (canvas.width - this.size);
+                this.y = -60;
+                this.type = Math.random() > 0.25 ? 'neon' : 'bomb';
+                this.speed = speedBase + Math.random() * 1.5;
+                this.color = this.type === 'neon' ? '#00ff88' : '#ff1e1e';
+            }
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 10; ctx.shadowColor = this.color;
+                ctx.fillStyle = this.color;
+                if(this.type === 'neon') ctx.fillRect(this.x, this.y, this.size, this.size);
+                else { ctx.beginPath(); ctx.arc(this.x + 22, this.y + 22, 18, 0, Math.PI*2); ctx.fill(); }
+                ctx.restore();
+            }
+            update() { this.y += this.speed; }
+        }
+
+        function handleInput(e) {
+            if(!gameActive) return;
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+
+            for (let i = elements.length - 1; i >= 0; i--) {
+                let el = elements[i];
+                if(x >= el.x - 20 && x <= el.x + el.size + 20 && y >= el.y - 20 && y <= el.y + el.size + 20) {
+                    if(el.type === 'neon') {
+                        score += 10;
+                        for(let j=0; j<10; j++) particles.push(new Particle(el.x + 22, el.y + 22, '#00ff88'));
+                        elements.splice(i, 1);
+                        speedBase = 3 + Math.log10(score + 1) * 2;
+                        spawnInterval = Math.max(400, 1000 - Math.log10(score + 1) * 200);
+                        document.getElementById('score-num').innerText = score;
+                    } else { gameOver("BOMBA PATLADI"); }
+                    break;
+                }
             }
         }
 
-        function drawPlayer() {
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#00ff88';
-            ctx.fillStyle = '#00ff88';
-            // Modern bir "yakalayıcı" çizimi
-            ctx.fillRect(playerX, canvas.height - 40, playerWidth, 10);
-            ctx.fillRect(playerX, canvas.height - 45, 5, 15);
-            ctx.fillRect(playerX + playerWidth - 5, canvas.height - 45, 5, 15);
-        }
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', (e) => { handleInput(e); e.preventDefault(); }, {passive: false});
 
-        function update() {
-            if (!gameActive) return;
-
+        function update(time) {
+            if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Arka plan ızgarası (Hafif)
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
 
-            items.forEach((item, index) => {
-                item.update();
-                item.draw();
+            if (time - lastSpawn > spawnInterval && elements.length < 12) {
+                elements.push(new NeonElement());
+                lastSpawn = time;
+            }
 
-                // Çarpışma Kontrolü
-                if (item.y + item.h > canvas.height - 40 && 
-                    item.x + item.w > playerX && 
-                    item.x < playerX + playerWidth) {
-                    
-                    if (item.type === 'neon') {
-                        score += 10;
-                        document.getElementById('score-val').innerText = score;
-                        speedMultiplier += 0.01; // Oyun yavaşça hızlanır
-                        items.splice(index, 1);
-                    } else {
-                        gameOver();
-                    }
-                }
-
-                // Ekrandan çıkma
-                if (item.y > canvas.height) items.splice(index, 1);
+            particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if(p.alpha <= 0) particles.splice(i, 1);
             });
 
-            drawPlayer();
+            for (let i = elements.length - 1; i >= 0; i--) {
+                let el = elements[i];
+                el.update(); el.draw();
+                if(el.y > canvas.height) {
+                    if(el.type === 'neon') {
+                        lives--;
+                        updateLives();
+                        body.classList.add('shake');
+                        setTimeout(() => body.classList.remove('shake'), 200);
+                        if(lives <= 0) gameOver("SİSTEM ÇÖKTÜ");
+                    }
+                    elements.splice(i, 1);
+                }
+            }
             requestAnimationFrame(update);
         }
 
-        function gameOver() {
-            gameActive = false;
-            body.classList.add('shake'); // Ekran sarsılması
-            
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('catcher_best', highScore);
-            }
+        function updateLives() {
+            document.getElementById('lives-display').innerText = "❤".repeat(lives);
+        }
 
-            document.getElementById('final-score').innerText = `SKOR: ${score}`;
+        function gameOver(reason) {
+            gameActive = false;
+            // Best Score Kaydı
+            const best = localStorage.getItem('catcher_best') || 0;
+            if(score > best) localStorage.setItem('catcher_best', score);
+            
+            document.getElementById('fail-title').innerText = reason;
+            document.getElementById('final-res').innerText = score;
             document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
-            score = 0;
-            speedMultiplier = 1;
-            items = [];
-            gameActive = true;
-            body.classList.remove('shake');
-            document.getElementById('score-val').innerText = "0";
+            score = 0; lives = 3; speedBase = 3; elements = []; particles = [];
+            gameActive = true; updateLives();
+            document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
-            spawn();
-            update();
+            requestAnimationFrame(update);
         }
 
-        spawn();
-        update();
+        requestAnimationFrame(update);
     </script>
 </body>
 </html>
