@@ -16,7 +16,7 @@
             margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; 
         }
         
-        /* GİRİŞ VE PROFİL DÜZENLEME PANELİ */
+        /* KAYIT VE PROFİL PANELİ */
         #register-screen { 
             position: fixed; inset: 0; background: var(--bg); z-index: 1000; 
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -45,7 +45,6 @@
             background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 50px; 
             border: 1px solid #222; cursor: default;
         }
-        #nav-avatar { font-size: 1.5rem; }
         
         .nav-actions { display: flex; gap: 15px; align-items: center; }
         .btn-edit { 
@@ -53,12 +52,12 @@
             cursor: pointer; border: 1px solid var(--neon); padding: 6px 12px; 
             border-radius: 5px; transition: 0.3s;
         }
-        .btn-edit:hover { background: rgba(0,255,136,0.1); }
-        .btn-logout { 
+        .btn-exit-red { 
             color: #ff1e1e; font-family: 'Orbitron'; font-size: 0.7rem; 
             cursor: pointer; letter-spacing: 1px; transition: 0.3s;
+            text-decoration: none; border: 1px solid #ff1e1e; padding: 6px 12px; border-radius: 5px;
         }
-        .btn-logout:hover { text-shadow: 0 0 10px #ff1e1e; }
+        .btn-exit-red:hover { background: rgba(255,30,30,0.1); box-shadow: 0 0 10px #ff1e1e; }
 
         /* LOBİ KARTLARI */
         #lobby-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
@@ -81,14 +80,18 @@
         .catcher-card { border-left: 5px solid var(--catcher); }
         .link-card { border-left: 5px solid var(--link); }
 
-        .game-card h3 { font-family: 'Orbitron'; font-size: 1.3rem; margin: 0 0 10px 0; font-weight: 900; }
-        .game-card p { color: #888; font-size: 0.85rem; line-height: 1.4; }
-
         .btn-save { 
             background: var(--neon); color: black; border: none; padding: 15px; 
             border-radius: 8px; font-family: 'Orbitron'; font-weight: 900; 
             cursor: pointer; width: 100%; font-size: 1rem; 
         }
+
+        .btn-close-app {
+            background: transparent; color: #ff1e1e; border: 1px solid #ff1e1e; padding: 10px; 
+            border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; width: 100%; 
+            margin-top: 15px; font-size: 0.8rem; transition: 0.3s;
+        }
+        .btn-close-app:hover { background: rgba(255,30,30,0.1); }
         
         header h1 { 
             font-family: 'Orbitron'; font-size: 3.5rem; letter-spacing:15px; margin:0; 
@@ -115,7 +118,9 @@
                 <div class="avatar-item" onclick="selectAvatar('🎯', this)">🎯</div>
                 <div class="avatar-item" onclick="selectAvatar('🛰️', this)">🛰️</div>
             </div>
-            <button class="btn-save" onclick="saveUser()">SİSTEMİ ONAYLA</button>
+            <button class="btn-save" onclick="saveUser()">SİSTEMİ BAŞLAT</button>
+            
+            <button class="btn-close-app" id="final-exit-btn" onclick="terminateSession()">SİTEDEN ÇIK</button>
             <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">VAZGEÇ</p>
         </div>
     </div>
@@ -128,7 +133,7 @@
             </div>
             <div class="nav-actions">
                 <div class="btn-edit" onclick="openProfile()">PROFİLİ DÜZENLE</div>
-                <div class="btn-logout" onclick="logout()">SİSTEMİ KAPAT</div>
+                <div class="btn-exit-red" onclick="logout()">SİTEDEN ÇIK</div>
             </div>
         </nav>
 
@@ -140,7 +145,7 @@
         <div class="container">
             <div class="game-card f1-card" onclick="location.href='/f1.html'">
                 <h3>F1 REAKSİYON</h3>
-                <p>Işıklar söndüğünde mermi gibi fırla!</p>
+                <p>Işıklar söndüğünde reaksiyonunu göster!</p>
             </div>
             <div class="game-card quiz-card" onclick="location.href='/quiz.html'">
                 <h3>QUIZ ARENA</h3>
@@ -178,6 +183,8 @@
                 document.getElementById('register-screen').style.display = 'flex';
                 document.getElementById('lobby-screen').style.display = 'none';
                 document.getElementById('cancel-edit').style.display = 'none';
+                document.getElementById('final-exit-btn').style.display = 'block'; // Girişte çıkış butonu gözüksün
+                document.getElementById('reg-title').innerText = "SİSTEME GİRİŞ";
             } else {
                 const user = JSON.parse(userStr);
                 document.getElementById('nav-name').innerText = user.name.toUpperCase();
@@ -203,9 +210,10 @@
         function openProfile() {
             const user = JSON.parse(localStorage.getItem('user'));
             document.getElementById('username-input').value = user.name;
-            document.getElementById('reg-title').innerText = "PROFİLİ GÜNCELLE";
+            document.getElementById('reg-title').innerText = "PROFİLİ DÜZENLE";
             document.getElementById('register-screen').style.display = 'flex';
             document.getElementById('cancel-edit').style.display = 'block';
+            document.getElementById('final-exit-btn').style.display = 'none'; // Düzenleme yaparken çıkış butonu gizlensin
         }
 
         function closeRegister() {
@@ -213,9 +221,15 @@
         }
 
         function logout() {
-            if(confirm("Tüm veriler silinecek ve sistem kapanacak. Emin misin?")) {
-                localStorage.clear();
+            if(confirm("Siteden çıkış yapılacak. Emin misin?")) {
+                localStorage.removeItem('user');
                 location.reload();
+            }
+        }
+
+        function terminateSession() {
+            if(confirm("Siteden ayrılmak istediğinize emin misiniz?")) {
+                window.location.href = "https://www.google.com"; // Veya istediğin bir veda sayfası
             }
         }
 
