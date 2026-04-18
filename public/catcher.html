@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ARENA | SKY CATCHER BIG</title>
+    <title>ARENA | SKY CATCHER FINAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
@@ -12,7 +12,7 @@
         body { 
             margin: 0; padding: 0; 
             background: var(--sky); 
-            background-image: url('bg.png'); 
+            background-image: url('bg.png'); /* Eğer bg.png varsa */
             background-position: center bottom;
             background-repeat: no-repeat;
             background-size: cover; 
@@ -65,7 +65,7 @@
         const body = document.getElementById('game-body');
         
         let score = 0, lives = 3, gameActive = true;
-        let elements = [], clouds = [], lastSpawn = 0;
+        let elements = [], clouds = [], particles = [], lastSpawn = 0;
         let speedBase = 4.0; 
         let spawnInterval = 900; 
         let waterLevel = 60, targetWaterLevel = 60;
@@ -93,48 +93,57 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // --- PATLAMA PARTİKÜLLERİ ---
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = (Math.random() - 0.5) * 12; // Yırtıcı rüzgar etkisi
+                this.speedY = (Math.random() - 0.5) * 12;
+                this.alpha = 1; this.color = color;
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.04; this.size *= 0.96; } // Yavaşça küçülür ve solar
+            draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+        }
+
         class RainDrop {
             constructor() {
-                // --- MOBİL İÇİN BÜYÜTÜLDÜ ---
-                this.size = Math.max(canvas.width * 0.12, 50); 
-                if(this.size > 70) this.size = 70; // PC'de aşırı devleşmesin
-
+                this.size = Math.min(canvas.width * 0.12, 55); 
                 const margin = canvas.width * 0.15;
                 this.x = margin + Math.random() * (canvas.width - this.size - (margin * 2));
                 this.y = -100;
                 this.type = Math.random() < 0.22 ? 'acid' : 'water';
-                this.speed = Math.min(11, speedBase + (score * 0.009) + (Math.random() * 2));
+                this.speed = Math.min(11, speedBase + (score * 0.009) + (Math.random() * 2.5));
                 this.color = this.type === 'water' ? '#ffffff' : '#ff8c00';
             }
-            draw() {
-                ctx.save();
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
-                ctx.bezierCurveTo(this.x - this.size/2, this.y + this.size, this.x + this.size/2, this.y + this.size, this.x, this.y);
-                ctx.fill();
-                ctx.restore();
-            }
+            draw() { ctx.save(); ctx.fillStyle = this.color; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.bezierCurveTo(this.x - this.size/2, this.y + this.size, this.x + this.size/2, this.y + this.size, this.x, this.y); ctx.fill(); ctx.restore(); }
             update() { this.y += this.speed; }
+        }
+
+        function createExplosion(x, y, color) {
+            for(let j=0; j<15; j++) particles.push(new Particle(x, y, color));
         }
 
         function handleInput(e) {
             if(!gameActive) return;
-            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            const x = clientX - canvas.getBoundingClientRect().left;
+            const y = clientY - canvas.getBoundingClientRect().top;
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                // Hitbox Genişletme (Mobilde basmak çok kolaylaştı)
-                if(x >= el.x - 65 && x <= el.x + 65 && y >= el.y - 30 && y <= el.y + 110) {
+                // Hitbox Genişletme (Büyük damla ve parmak/fare için)
+                if(x >= el.x - 70 && x <= el.x + 70 && y >= el.y - 30 && y <= el.y + 110) {
+                    createExplosion(el.x, el.y + 30, el.color); // Patlama Efekti!
                     if(el.type === 'water') {
                         score += 10;
                         targetWaterLevel = Math.max(60, targetWaterLevel - 15);
                         document.getElementById('score-num').innerText = score;
                     } else { 
                         lives--; updateLives();
-                        targetWaterLevel += 60;
-                        if(lives <= 0) gameOver("ASİT SIZINTISI");
+                        targetWaterLevel += 70;
+                        if(lives <= 0) gameOver();
                     }
                     elements.splice(i, 1);
                     break;
@@ -149,7 +158,7 @@
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Bulutlar (Huzurlu Arka Plan)
+            // Bulutlar
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             clouds.forEach(c => {
                 ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
@@ -158,12 +167,14 @@
 
             waterLevel += (targetWaterLevel - waterLevel) * 0.08;
 
-            // --- MAX 2 DAMLA KURALI ---
             if (time - lastSpawn > Math.max(380, spawnInterval - (score * 1.1))) {
                 elements.push(new RainDrop());
-                if(score > 250 && Math.random() > 0.6) elements.push(new RainDrop()); 
+                if(score > 200 && Math.random() > 0.6) elements.push(new RainDrop()); 
                 lastSpawn = time;
             }
+
+            // Partikülleri güncelle ve çiz
+            particles.forEach((p, i) => { p.update(); p.draw(); if(p.alpha <= 0) particles.splice(i, 1); });
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
@@ -196,8 +207,8 @@
         }
 
         function resetGame() {
-            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60; speedBase = 4.0;
-            elements = []; gameActive = true; updateLives(); 
+            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60;
+            elements = []; particles = []; gameActive = true; updateLives(); 
             document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
             requestAnimationFrame(update);
