@@ -3,20 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ARENA | BALANCED CHALLENGE</title>
+    <title>ARENA | SKY CATCHER BIG</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; background: var(--sky); background-image: url('bg.png'); background-position: center bottom; background-repeat: no-repeat; background-size: cover; color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
-        .game-nav { position: fixed; top: env(safe-area-inset-top, 20px); left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        #score-num { font-size: clamp(2rem, 8vw, 3rem); color: #fff; text-shadow: 2px 2px 10px rgba(0,0,0,0.4); font-weight: 900; }
-        #lives-display { font-size: clamp(1.2rem, 5vw, 1.8rem); letter-spacing: 5px; color: #ff3366; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--sky); 
+            background-image: url('bg.png'); 
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-size: cover; 
+            color: white; font-family: 'Orbitron', sans-serif; 
+            overflow: hidden; touch-action: none; 
+            width: 100vw; height: 100vh;
+        }
+
+        .game-nav { 
+            position: fixed; top: env(safe-area-inset-top, 20px); 
+            left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 1200px; padding: 10px 25px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 1000; 
+        }
+
+        #score-num { font-size: clamp(2rem, 8vw, 3.5rem); color: #fff; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); font-weight: 900; }
+        #lives-display { font-size: clamp(1.2rem, 5vw, 2rem); color: #ff3366; letter-spacing: 5px; }
+        
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; background: transparent; }
-        .btn-lobi { color: #fff; text-decoration: none; font-size: 0.8rem; border: 1.5px solid #fff; padding: 5px 15px; border-radius: 8px; background: rgba(0,0,0,0.2); }
+        
+        .btn-lobi { color: #fff; text-decoration: none; font-size: 0.8rem; border: 2px solid #fff; padding: 6px 16px; border-radius: 10px; background: rgba(0,0,0,0.2); }
+
         #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
         .box { text-align: center; background: #fff; color: #000; padding: 40px; border-radius: 30px; width: 85%; max-width: 400px; }
-        .btn-restart { background: #0099ff; color: #fff; border: none; padding: 18px; font-weight: 900; border-radius: 12px; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1.2rem; font-family: 'Orbitron'; }
+        .btn-restart { background: var(--water); color: #fff; border: none; padding: 18px; font-weight: 900; border-radius: 15px; cursor: pointer; margin-top: 25px; width: 100%; font-size: 1.2rem; font-family: 'Orbitron'; }
     </style>
 </head>
 <body id="game-body">
@@ -32,7 +54,7 @@
     <div id="overlay">
         <div class="box">
             <h2 id="end-msg">SULAR YÜKSELDİ</h2>
-            <p id="final-res" style="font-size: 4rem; color: #0099ff; margin: 15px 0; font-weight: 900;">0</p>
+            <p id="final-res" style="font-size: 4rem; color: var(--water); font-weight: 900; margin: 15px 0;">0</p>
             <button class="btn-restart" onclick="resetGame()">YENİDEN DENE</button>
         </div>
     </div>
@@ -43,32 +65,55 @@
         const body = document.getElementById('game-body');
         
         let score = 0, lives = 3, gameActive = true;
-        let elements = [], lastSpawn = 0;
-        let speedBase = 4.3; 
-        let spawnInterval = 850; 
+        let elements = [], clouds = [], lastSpawn = 0;
+        let speedBase = 4.0; 
+        let spawnInterval = 900; 
         let waterLevel = 60, targetWaterLevel = 60;
 
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        function resize() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+            initEnvironment();
+        }
+
+        function initEnvironment() {
+            clouds = [];
+            const count = canvas.width > 800 ? 6 : 4;
+            for(let i=0; i < count; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: 60 + Math.random() * 100,
+                    w: 120 + Math.random() * 120,
+                    h: 40 + Math.random() * 20,
+                    s: 0.2 + Math.random() * 0.4
+                });
+            }
+        }
+
         window.addEventListener('resize', resize);
         resize();
 
         class RainDrop {
-            constructor(posX) {
-                this.size = Math.min(canvas.width * 0.08, 48);
-                const margin = canvas.width * 0.12;
-                // posX gelirse onu kullan, gelmezse rastgele ata (Kenar korumalı)
-                this.x = posX || (margin + Math.random() * (canvas.width - this.size - (margin * 2)));
+            constructor() {
+                // --- MOBİL İÇİN BÜYÜTÜLDÜ ---
+                this.size = Math.max(canvas.width * 0.12, 50); 
+                if(this.size > 70) this.size = 70; // PC'de aşırı devleşmesin
+
+                const margin = canvas.width * 0.15;
+                this.x = margin + Math.random() * (canvas.width - this.size - (margin * 2));
                 this.y = -100;
                 this.type = Math.random() < 0.22 ? 'acid' : 'water';
-                // HIZ LİMİTİ: Bir noktadan sonra aşırı hızlanmayı durdurur
-                this.speed = Math.min(12, speedBase + (score * 0.01) + (Math.random() * 2));
+                this.speed = Math.min(11, speedBase + (score * 0.009) + (Math.random() * 2));
                 this.color = this.type === 'water' ? '#ffffff' : '#ff8c00';
             }
             draw() {
-                ctx.save(); ctx.fillStyle = this.color; ctx.beginPath();
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
                 ctx.bezierCurveTo(this.x - this.size/2, this.y + this.size, this.x + this.size/2, this.y + this.size, this.x, this.y);
-                ctx.fill(); ctx.restore();
+                ctx.fill();
+                ctx.restore();
             }
             update() { this.y += this.speed; }
         }
@@ -77,19 +122,18 @@
             if(!gameActive) return;
             const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
             const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            const rect = canvas.getBoundingClientRect();
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                if(x >= el.x - 60 && x <= el.x + 60 && y >= el.y - 20 && y <= el.y + 100) {
+                // Hitbox Genişletme (Mobilde basmak çok kolaylaştı)
+                if(x >= el.x - 65 && x <= el.x + 65 && y >= el.y - 30 && y <= el.y + 110) {
                     if(el.type === 'water') {
                         score += 10;
-                        const drain = Math.max(7, 16 - (score * 0.012));
-                        targetWaterLevel = Math.max(60, targetWaterLevel - drain);
+                        targetWaterLevel = Math.max(60, targetWaterLevel - 15);
                         document.getElementById('score-num').innerText = score;
                     } else { 
                         lives--; updateLives();
-                        targetWaterLevel += 65;
+                        targetWaterLevel += 60;
                         if(lives <= 0) gameOver("ASİT SIZINTISI");
                     }
                     elements.splice(i, 1);
@@ -104,24 +148,20 @@
         function update(time) {
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Bulutlar (Huzurlu Arka Plan)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            clouds.forEach(c => {
+                ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
+                c.x += c.s; if(c.x - c.w/2 > canvas.width) c.x = -c.w/2;
+            });
+
             waterLevel += (targetWaterLevel - waterLevel) * 0.08;
 
-            // --- GELİŞMİŞ KAOS KONTROLÜ ---
-            let dynamicSpawn = Math.max(450, spawnInterval - (score * 1.1)); // Minimum 450ms ara
-            
-            if (time - lastSpawn > dynamicSpawn && elements.length < 18) {
-                // Her zaman en az 1 damla
+            // --- MAX 2 DAMLA KURALI ---
+            if (time - lastSpawn > Math.max(380, spawnInterval - (score * 1.1))) {
                 elements.push(new RainDrop());
-                
-                // Skor arttıkça grup (burst) şansı, ama MAX 3 DAMLA
-                if(score > 150) {
-                    let extraCount = score > 400 ? 2 : 1; // Toplam 2 veya 3 damla
-                    for(let k=0; k < extraCount; k++) {
-                        if(Math.random() > 0.6) {
-                            elements.push(new RainDrop());
-                        }
-                    }
-                }
+                if(score > 250 && Math.random() > 0.6) elements.push(new RainDrop()); 
                 lastSpawn = time;
             }
 
@@ -129,36 +169,34 @@
                 let el = elements[i];
                 el.update(); el.draw();
                 if(el.y > canvas.height - waterLevel) {
-                    if(el.type === 'water') {
-                        targetWaterLevel += (28 + (score * 0.04));
-                    }
+                    if(el.type === 'water') targetWaterLevel += (28 + (score * 0.03));
                     elements.splice(i, 1);
                 }
             }
 
-            ctx.fillStyle = 'rgba(0, 153, 255, 0.7)';
+            // SU (Huzurlu Mavi)
+            ctx.fillStyle = 'rgba(0, 153, 255, 0.75)';
             ctx.fillRect(0, canvas.height - waterLevel, canvas.width, waterLevel);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath();
             for(let i=0; i<canvas.width; i+=25) {
                 ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/250 + i/60)*7);
             }
             ctx.stroke();
 
-            if(waterLevel >= canvas.height * 0.88) gameOver("ŞEHİR SULAR ALTINDA");
+            if(waterLevel >= canvas.height * 0.88) gameOver();
             requestAnimationFrame(update);
         }
 
         function updateLives() { document.getElementById('lives-display').innerText = "❤".repeat(Math.max(0, lives)); }
 
-        function gameOver(msg) {
+        function gameOver() {
             gameActive = false;
-            document.getElementById('end-msg').innerText = msg;
             document.getElementById('final-res').innerText = score;
             document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
-            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60;
+            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60; speedBase = 4.0;
             elements = []; gameActive = true; updateLives(); 
             document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
