@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ARENA | OVERDRIVE</title>
+    <title>ARENA | BALANCED CHALLENGE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --water: #0099ff; --acid: #ff3300; --sky: #87CEEB; }
+        :root { --water: #0099ff; --acid: #ff8c00; --sky: #87CEEB; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; background: var(--sky); background-image: url('bg.png'); background-position: center bottom; background-repeat: no-repeat; background-size: cover; color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
         .game-nav { position: fixed; top: env(safe-area-inset-top, 20px); left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        #score-num { font-size: clamp(2rem, 8vw, 3.5rem); color: #fff; text-shadow: 2px 2px 15px rgba(0,0,0,0.5); font-weight: 900; }
-        #lives-display { font-size: clamp(1.5rem, 6vw, 2.5rem); letter-spacing: 5px; color: #ff3366; }
-        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
-        .btn-lobi { color: #fff; text-decoration: none; font-size: 0.8rem; border: 2px solid #fff; padding: 6px 16px; border-radius: 10px; background: rgba(0,0,0,0.3); }
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
+        #score-num { font-size: clamp(2rem, 8vw, 3rem); color: #fff; text-shadow: 2px 2px 10px rgba(0,0,0,0.4); font-weight: 900; }
+        #lives-display { font-size: clamp(1.2rem, 5vw, 1.8rem); letter-spacing: 5px; color: #ff3366; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; background: transparent; }
+        .btn-lobi { color: #fff; text-decoration: none; font-size: 0.8rem; border: 1.5px solid #fff; padding: 5px 15px; border-radius: 8px; background: rgba(0,0,0,0.2); }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
         .box { text-align: center; background: #fff; color: #000; padding: 40px; border-radius: 30px; width: 85%; max-width: 400px; }
-        .btn-restart { background: #ff3300; color: #fff; border: none; padding: 18px; font-weight: 900; border-radius: 15px; cursor: pointer; margin-top: 25px; width: 100%; font-size: 1.3rem; font-family: 'Orbitron'; }
+        .btn-restart { background: #0099ff; color: #fff; border: none; padding: 18px; font-weight: 900; border-radius: 12px; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1.2rem; font-family: 'Orbitron'; }
     </style>
 </head>
 <body id="game-body">
@@ -31,9 +31,9 @@
 
     <div id="overlay">
         <div class="box">
-            <h2 style="margin:0;">SİSTEM TAŞTI!</h2>
-            <p id="final-res" style="font-size: 4.5rem; color: #ff3300; font-weight: 900; margin: 15px 0;">0</p>
-            <button class="btn-restart" onclick="resetGame()">YENİDEN BAŞLAT</button>
+            <h2 id="end-msg">SULAR YÜKSELDİ</h2>
+            <p id="final-res" style="font-size: 4rem; color: #0099ff; margin: 15px 0; font-weight: 900;">0</p>
+            <button class="btn-restart" onclick="resetGame()">YENİDEN DENE</button>
         </div>
     </div>
 
@@ -43,67 +43,54 @@
         const body = document.getElementById('game-body');
         
         let score = 0, lives = 3, gameActive = true;
-        let elements = [], particles = [];
-        
-        // --- KAOS VE HIZ PARAMETRELERİ ---
-        let speedBase = 4.5; 
-        let spawnInterval = 800; 
-        let lastSpawn = 0;
+        let elements = [], lastSpawn = 0;
+        let speedBase = 4.3; 
+        let spawnInterval = 850; 
         let waterLevel = 60, targetWaterLevel = 60;
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
 
         class RainDrop {
-            constructor() {
+            constructor(posX) {
                 this.size = Math.min(canvas.width * 0.08, 48);
-                const margin = canvas.width * 0.15;
-                this.x = margin + Math.random() * (canvas.width - this.size - (margin * 2));
+                const margin = canvas.width * 0.12;
+                // posX gelirse onu kullan, gelmezse rastgele ata (Kenar korumalı)
+                this.x = posX || (margin + Math.random() * (canvas.width - this.size - (margin * 2)));
                 this.y = -100;
                 this.type = Math.random() < 0.22 ? 'acid' : 'water';
-                
-                // İVME: Skor arttıkça hız mermi seviyesine çıkar
-                this.speed = speedBase + (score * 0.015) + (Math.random() * 3);
+                // HIZ LİMİTİ: Bir noktadan sonra aşırı hızlanmayı durdurur
+                this.speed = Math.min(12, speedBase + (score * 0.01) + (Math.random() * 2));
                 this.color = this.type === 'water' ? '#ffffff' : '#ff8c00';
             }
             draw() {
-                ctx.save();
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.2)';
-                ctx.beginPath();
+                ctx.save(); ctx.fillStyle = this.color; ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
                 ctx.bezierCurveTo(this.x - this.size/2, this.y + this.size, this.x + this.size/2, this.y + this.size, this.x, this.y);
-                ctx.fill();
-                ctx.restore();
+                ctx.fill(); ctx.restore();
             }
             update() { this.y += this.speed; }
         }
 
         function handleInput(e) {
             if(!gameActive) return;
-            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            const x = clientX - canvas.getBoundingClientRect().left;
-            const y = clientY - canvas.getBoundingClientRect().top;
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            const rect = canvas.getBoundingClientRect();
 
             for (let i = elements.length - 1; i >= 0; i--) {
                 let el = elements[i];
-                const hit = 65; // Hız arttığı için hitbox cömert tutuldu
-                if(x >= el.x - hit && x <= el.x + hit && y >= el.y - 20 && y <= el.y + 110) {
+                if(x >= el.x - 60 && x <= el.x + 60 && y >= el.y - 20 && y <= el.y + 100) {
                     if(el.type === 'water') {
-                        score += 10; 
-                        // Suyu düşürme etkisi skorla azalır (Tahliye zorlaşır)
-                        const drain = Math.max(5, 18 - (score * 0.02));
+                        score += 10;
+                        const drain = Math.max(7, 16 - (score * 0.012));
                         targetWaterLevel = Math.max(60, targetWaterLevel - drain);
                         document.getElementById('score-num').innerText = score;
                     } else { 
                         lives--; updateLives();
-                        targetWaterLevel += 100; // Asit artık su seviyesini de patlatır
-                        if(lives <= 0) gameOver();
+                        targetWaterLevel += 65;
+                        if(lives <= 0) gameOver("ASİT SIZINTISI");
                     }
                     elements.splice(i, 1);
                     break;
@@ -117,16 +104,24 @@
         function update(time) {
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            waterLevel += (targetWaterLevel - waterLevel) * 0.08;
 
-            waterLevel += (targetWaterLevel - waterLevel) * 0.12;
-
-            // --- KAOS ÜRETİM ALGORİTMASI ---
-            // Skor arttıkça aynı anda birden fazla damla fırlatır
-            if (time - lastSpawn > Math.max(250, spawnInterval - (score * 1.5))) {
+            // --- GELİŞMİŞ KAOS KONTROLÜ ---
+            let dynamicSpawn = Math.max(450, spawnInterval - (score * 1.1)); // Minimum 450ms ara
+            
+            if (time - lastSpawn > dynamicSpawn && elements.length < 18) {
+                // Her zaman en az 1 damla
                 elements.push(new RainDrop());
-                // Belirli skordan sonra 2. damlayı da aynı anda atma şansı
-                if(score > 150 && Math.random() > 0.5) elements.push(new RainDrop());
-                if(score > 400 && Math.random() > 0.7) elements.push(new RainDrop());
+                
+                // Skor arttıkça grup (burst) şansı, ama MAX 3 DAMLA
+                if(score > 150) {
+                    let extraCount = score > 400 ? 2 : 1; // Toplam 2 veya 3 damla
+                    for(let k=0; k < extraCount; k++) {
+                        if(Math.random() > 0.6) {
+                            elements.push(new RainDrop());
+                        }
+                    }
+                }
                 lastSpawn = time;
             }
 
@@ -135,38 +130,37 @@
                 el.update(); el.draw();
                 if(el.y > canvas.height - waterLevel) {
                     if(el.type === 'water') {
-                        // Kaçırma cezası çok sertleşir
-                        targetWaterLevel += (35 + (score * 0.1));
+                        targetWaterLevel += (28 + (score * 0.04));
                     }
                     elements.splice(i, 1);
                 }
             }
 
-            // SU (Gerçekçi ve Tehlikeli Mavi)
-            ctx.fillStyle = 'rgba(0, 153, 255, 0.75)';
+            ctx.fillStyle = 'rgba(0, 153, 255, 0.7)';
             ctx.fillRect(0, canvas.height - waterLevel, canvas.width, waterLevel);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath();
-            for(let i=0; i<canvas.width; i+=20) {
-                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/200 + i/40)*8);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath();
+            for(let i=0; i<canvas.width; i+=25) {
+                ctx.lineTo(i, canvas.height - waterLevel + Math.sin(Date.now()/250 + i/60)*7);
             }
             ctx.stroke();
 
-            if(waterLevel >= canvas.height * 0.9) gameOver();
+            if(waterLevel >= canvas.height * 0.88) gameOver("ŞEHİR SULAR ALTINDA");
             requestAnimationFrame(update);
         }
 
         function updateLives() { document.getElementById('lives-display').innerText = "❤".repeat(Math.max(0, lives)); }
 
-        function gameOver() {
+        function gameOver(msg) {
             gameActive = false;
+            document.getElementById('end-msg').innerText = msg;
             document.getElementById('final-res').innerText = score;
             document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
-            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60; speedBase = 4.5; 
-            elements = []; gameActive = true; 
-            updateLives(); document.getElementById('score-num').innerText = "0";
+            score = 0; lives = 3; waterLevel = 60; targetWaterLevel = 60;
+            elements = []; gameActive = true; updateLives(); 
+            document.getElementById('score-num').innerText = "0";
             document.getElementById('overlay').style.display = 'none';
             requestAnimationFrame(update);
         }
