@@ -2,63 +2,190 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CIRCLE MASTER | PRECISION TEST</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ARENA | PERFECT CIRCLE TRUE TEST</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ff88; --bg: #050505; --panel: rgba(15,15,15,0.95); }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; }
+        :root { --neon: #00f7ff; --error: #ff3366; --bg: #05050a; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
         
-        .top-nav { width: 100%; height: 60px; background: #000; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 100; }
-        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
-        .exit-btn { border: 1px solid #ff1e1e; color: #ff1e1e; padding: 5px 15px; text-decoration: none; border-radius: 5px; font-family: 'Orbitron'; font-size: 0.7rem; }
+        .ui { position: fixed; top: 30px; width: 100%; text-align: center; z-index: 10; pointer-events: none; }
+        #score-display { font-size: clamp(3rem, 10vw, 5rem); font-weight: 900; text-shadow: 0 0 25px var(--neon); opacity: 0; transition: 0.3s; margin-bottom: 0; }
+        #status { font-size: 1rem; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; }
 
-        .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        canvas { display: block; background: radial-gradient(circle, #1a1a2e 0%, #05050a 100%); }
         
-        #canvas-container { position: relative; width: 350px; height: 350px; background: #0a0a0a; border-radius: 50%; border: 2px dashed #222; cursor: crosshair; }
-        canvas { position: absolute; top: 0; left: 0; border-radius: 50%; }
-
-        .ui-overlay { text-align: center; margin-bottom: 20px; z-index: 10; }
-        #accuracy-display { font-family: 'Orbitron'; font-size: 4rem; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px rgba(0,255,136,0.3); }
-        #status-msg { font-family: 'Orbitron'; color: #555; letter-spacing: 2px; text-transform: uppercase; }
-
-        .leaderboard { position: absolute; right: 20px; top: 80px; width: 200px; background: var(--panel); padding: 15px; border-radius: 10px; border: 1px solid #333; }
-        .lb-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); text-align: center; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .lb-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; font-family: 'Orbitron'; }
-
-        .reset-btn { margin-top: 20px; background: white; color: black; border: none; padding: 10px 30px; font-family: 'Orbitron'; font-weight: 900; border-radius: 5px; cursor: pointer; display: none; }
-
-        @media (max-width: 768px) {
-            #canvas-container { width: 300px; height: 300px; }
-            .leaderboard { position: relative; right: 0; top: 0; margin-top: 20px; width: 90%; }
-        }
+        .controls { position: fixed; bottom: env(safe-area-inset-bottom, 30px); left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 100; }
+        .btn { background: rgba(0, 247, 255, 0.1); border: 2px solid var(--neon); color: var(--neon); padding: 10px 20px; border-radius: 10px; font-family: 'Orbitron'; font-weight: 900; font-size: 0.8rem; cursor: pointer; pointer-events: auto; text-decoration: none; }
     </style>
 </head>
 <body>
-    <nav class="top-nav">
-        <div class="nav-logo">CIRCLE MASTER</div>
-        <a href="/" class="exit-btn">LOBİYE DÖN</a>
-    </nav>
 
-    <div class="game-container">
-        <div class="ui-overlay">
-            <div id="status-msg">DAİREYİ ÇİZMEYE BAŞLA</div>
-            <div id="accuracy-display">0%</div>
-        </div>
-
-        <div id="canvas-container">
-            <canvas id="circleCanvas"></canvas>
-        </div>
-
-        <button id="reset-btn" class="reset-btn" onclick="resetGame()">YENİDEN DENE</button>
-
-        <div class="leaderboard">
-            <div class="lb-title">TOP PRECISION</div>
-            <div id="lb-list"></div>
-        </div>
+    <div class="ui">
+        <div id="score-display">0%</div>
+        <div id="status">BİR DAİRE ÇİZ</div>
     </div>
 
-    <script src="games/circle.js"></script>
+    <canvas id="drawCanvas"></canvas>
+
+    <div class="controls">
+        <button class="btn" onclick="resetCanvas()">TEMİZLE</button>
+        <a href="/" class="btn">LOBİ</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score-display');
+        const statusText = document.getElementById('status');
+
+        let isDrawing = false;
+        let points = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            clearAll();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function clearAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Merkez noktası
+            ctx.fillStyle = "rgba(0, 247, 255, 0.1)";
+            ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 3, 0, Math.PI*2); ctx.fill();
+        }
+
+        function getCoords(e) {
+            return {
+                x: e.clientX || (e.touches ? e.touches[0].clientX : 0),
+                y: e.clientY || (e.touches ? e.touches[0].clientY : 0)
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            points = [];
+            scoreDisplay.style.opacity = "0";
+            statusText.innerText = "ÇİZİLİYOR...";
+            clearAll();
+            points.push(getCoords(e));
+        }
+
+        function drawPath() {
+            if (points.length < 2) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearAll();
+            ctx.strokeStyle = "rgba(0, 247, 255, 0.8)";
+            ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.lineJoin = "round";
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for(let i=1; i<points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+            ctx.stroke();
+        }
+
+        function finishDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (points.length < 50) { statusText.innerText = "ÇOK KISA! TAM BİR TUR AT."; return; }
+            analyzeCircle();
+        }
+
+        function analyzeCircle() {
+            // 1. Merkez Tahmini
+            let sumX = 0, sumY = 0;
+            points.forEach(p => { sumX += p.x; sumY += p.y; });
+            const centerX = sumX / points.length;
+            const centerY = sumY / points.length;
+
+            // 2. Yarıçap Analizi
+            const radii = points.map(p => Math.hypot(p.x - centerX, p.y - centerY));
+            const avgRadius = radii.reduce((a, b) => a + b) / radii.length;
+
+            // 3. --- KRİTİK GÜNCELLEME: EĞRİLİK VE KÖŞE KONTROLÜ ---
+            let cornerPenalty = 0;
+            let smoothnessPenalty = 0;
+            const step = 5; // Açı değişimini ölçmek için adım aralığı
+
+            for (let i = step; i < points.length - step; i += 1) {
+                const p1 = points[i - step];
+                const p2 = points[i];
+                const p3 = points[i + step];
+
+                // İki vektör arasındaki açıyı hesapla
+                const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+                const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+                
+                const dotProduct = v1.x * v2.x + v1.y * v2.y;
+                const mag1 = Math.hypot(v1.x, v1.y);
+                const mag2 = Math.hypot(v2.x, v2.y);
+                
+                if (mag1 < 1 || mag2 < 1) continue;
+
+                const angle = Math.acos(Math.max(-1, Math.min(1, dotProduct / (mag1 * mag2))));
+
+                // Dairede açı değişimi yumuşaktır (küçüktür). 
+                // Ani açı değişimi (sivri köşe) tespit edilirse ceza uygula.
+                if (angle > 0.6) { // Yaklaşık 35 derece üzeri ani dönüşler (Kare/Üçgen köşeleri)
+                    cornerPenalty += (angle * 50); 
+                }
+                smoothnessPenalty += angle; // Toplam pürüzsüzlük cezası
+            }
+
+            // 4. Tutarlılık ve Simetri Kontrolü (Elips Cezası)
+            let diffSum = 0;
+            radii.forEach(r => diffSum += Math.abs(r - avgRadius));
+            const consistency = (diffSum / radii.length) / avgRadius; // Yarıçap sapma oranı
+
+            // 5. Kapanış Kontrolü
+            const gap = Math.hypot(points[0].x - points[points.length - 1].x, points[0].y - points[points.length - 1].y);
+            const gapPenalty = (gap / avgRadius) * 60; 
+
+            // 6. FİNAL PUANLAMA ALGORİTMASI
+            // Temel puan tutarlılıktan gelir, köşe ve pürüzler onu baltalar.
+            let fitness = (1 - consistency) * 100;
+            let finalScore = fitness - cornerPenalty - (smoothnessPenalty * 0.1) - gapPenalty;
+
+            // Negatif puanları ve saçma çizimleri sıfırla
+            if (finalScore < 0 || avgRadius < 40) finalScore = 0;
+            if (finalScore > 99.8) finalScore = 100;
+
+            // 7. Görselleştirme (İdeal Daire)
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(centerX, centerY, avgRadius, 0, Math.PI * 2); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Sonuçları Yazdır
+            scoreDisplay.innerText = finalScore.toFixed(1) + "%";
+            scoreDisplay.style.opacity = "1";
+            
+            if (finalScore > 96) { statusText.innerText = "MÜKEMMEL!"; scoreDisplay.style.color = "var(--neon)"; }
+            else if (finalScore > 85) { statusText.innerText = "ÇOK İYİ"; scoreDisplay.style.color = "#fff"; }
+            else if (finalScore > 60) { statusText.innerText = "GAYRET ET"; scoreDisplay.style.color = "#ccc"; }
+            else { statusText.innerText = "BU BİR DAİRE DEĞİL"; scoreDisplay.style.color = "var(--error)"; }
+        }
+
+        function resetCanvas() {
+            clearAll();
+            scoreDisplay.style.opacity = "0";
+            statusText.innerText = "BİR DAİRE ÇİZ";
+            statusText.style.color = "var(--neon)";
+            scoreDisplay.style.color = "var(--neon)";
+        }
+
+        // Mouse Events
+        canvas.addEventListener('mousedown', startDrawing);
+        window.addEventListener('mousemove', (e) => { if(isDrawing) { points.push(getCoords(e)); drawPath(); } });
+        window.addEventListener('mouseup', finishDrawing);
+
+        // Touch Events
+        canvas.addEventListener('touchstart', (e) => { startDrawing(e); e.preventDefault(); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { if(isDrawing) { points.push(getCoords(e)); drawPath(); e.preventDefault(); } }, {passive: false});
+        canvas.addEventListener('touchend', finishDrawing);
+    </script>
 </body>
 </html>
