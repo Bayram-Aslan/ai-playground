@@ -1,5 +1,9 @@
 let state = 'IDLE', startTime, timerInterval, animReq, attempt = 0;
-const user = localStorage.getItem('user') || "OPERATÖR";
+
+// Veri çekme lobiyle (hubOperator) uyumlu hale getirildi
+const operatorData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"🤖"}');
+const user = operatorData.name;
+const userIcon = operatorData.icon;
 let top5 = JSON.parse(localStorage.getItem('f1-top-scores')) || [];
 
 const timer = document.getElementById('timer'), status = document.getElementById('status'),
@@ -87,7 +91,7 @@ function log(label, val, isFail) {
 }
 
 function save(s) {
-    top5.push({name: user, score: parseFloat(s)});
+    top5.push({name: user, icon: userIcon, score: parseFloat(s)});
     top5.sort((a,b) => a.score - b.score);
     top5 = top5.slice(0, 5);
     localStorage.setItem('f1-top-scores', JSON.stringify(top5));
@@ -95,13 +99,16 @@ function save(s) {
 }
 
 function updateBoard() {
-    leaderboard.innerHTML = top5.map((entry, i) => `
+    leaderboard.innerHTML = top5.map((entry, i) => {
+        const displayName = typeof entry.name === 'object' ? entry.name.name : entry.name;
+        const displayIcon = typeof entry.name === 'object' ? entry.name.icon : (entry.icon || "🏎️");
+        return `
         <div class="list-item">
             <span style="color:#555">${i+1}.</span>
-            <span style="flex-grow:1; margin-left:10px">${entry.name.toUpperCase()}</span>
+            <span style="flex-grow:1; margin-left:10px">${displayIcon} ${displayName.toUpperCase()}</span>
             <span style="color:var(--neon)">${entry.score.toFixed(3)}</span>
-        </div>
-    `).join('') || "<div class='list-item'>KAYIT YOK</div>";
+        </div>`;
+    }).join('') || "<div class='list-item'>KAYIT YOK</div>";
 }
 
 function showReset() { 

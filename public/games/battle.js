@@ -1,11 +1,13 @@
 let p1Hp = 100, p2Hp = 100;
 let barValue = 0, direction = 1, barSpeed = 2;
-let isMoving = true, round = 1;
-const user = localStorage.getItem('user') || "OPERATÖR";
+let isMoving = true;
 
-document.getElementById('p1-name').innerText = user.toUpperCase();
+const operatorData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"⚔️"}');
+const user = operatorData.name;
+const userIcon = operatorData.icon;
 
-// Bar Animasyonu
+document.getElementById('p1-name').innerText = `${userIcon} ${user.toUpperCase()}`;
+
 function moveBar() {
     if (!isMoving) return;
     barValue += direction * barSpeed;
@@ -18,41 +20,19 @@ moveBar();
 
 function hit() {
     if (!isMoving) return;
-    isMoving = false; // Barı durdur
-    
+    isMoving = false; 
     const p1Power = barValue;
-    const p2Power = Math.floor(Math.random() * 80) + 10; // Rakip rastgele vurur
-    
+    const p2Power = Math.floor(Math.random() * 80) + 10; 
     document.getElementById('hit-btn').disabled = true;
-    document.getElementById('msg').innerText = `GÜÇ: ${Math.floor(p1Power)} VS ${p2Power}`;
-
-    setTimeout(() => {
-        resolveRound(p1Power, p2Power);
-    }, 1000);
+    setTimeout(() => { resolveRound(p1Power, p2Power); }, 1000);
 }
 
 function resolveRound(p1, p2) {
-    const p1Obj = document.getElementById('player-obj');
-    const p2Obj = document.getElementById('enemy-obj');
-
-    if (p1 > p2) {
-        p2Hp -= 34; // 3 vuruşta bitsin diye
-        p2Obj.style.transform = "translateX(50px) rotate(20deg)";
-        p2Obj.style.opacity = "0.5";
-        document.getElementById('msg').innerText = "HASAR VERDİN!";
-    } else {
-        p1Hp -= 34;
-        p1Obj.style.transform = "translateX(-50px) rotate(-20deg)";
-        p1Obj.style.opacity = "0.5";
-        document.getElementById('msg').innerText = "HASAR ALDIN!";
-    }
-
+    if (p1 > p2) p2Hp -= 34;
+    else p1Hp -= 34;
     updateHp();
-
-    setTimeout(() => {
-        if (p1Hp <= 0 || p2Hp <= 0) return endGame();
-        resetRound();
-    }, 1500);
+    if (p1Hp <= 0 || p2Hp <= 0) endGame();
+    else resetRound();
 }
 
 function updateHp() {
@@ -62,18 +42,12 @@ function updateHp() {
 
 function resetRound() {
     isMoving = true;
-    barSpeed += 0.5; // Her tur hızlanır
+    barSpeed += 0.5;
     document.getElementById('hit-btn').disabled = false;
-    document.getElementById('player-obj').style.transform = "scaleX(-1)";
-    document.getElementById('player-obj').style.opacity = "1";
-    document.getElementById('enemy-obj').style.transform = "none";
-    document.getElementById('enemy-obj').style.opacity = "1";
-    document.getElementById('msg').innerText = "SIRADAKİ ROUND...";
     moveBar();
 }
 
 function endGame() {
-    const winner = p1Hp > 0 ? "KAZANDIN! 🏆" : "KAYBETTİN! 💀";
-    document.getElementById('msg').innerText = winner;
-    setTimeout(() => location.reload(), 3000);
+    const win = p1Hp > 0;
+    document.getElementById('msg').innerText = win ? "KAZANDIN!" : "KAYBETTİN!";
 }
