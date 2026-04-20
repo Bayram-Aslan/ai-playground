@@ -1,6 +1,5 @@
 let state = 'IDLE', startTime, timerInterval, animReq, attempt = 0;
 
-// Veri çekme lobiyle (hubOperator) uyumlu hale getirildi
 const operatorData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"🤖"}');
 const user = operatorData.name;
 const userIcon = operatorData.icon;
@@ -37,6 +36,7 @@ function startSequence() {
         if(count === 5) {
             clearInterval(timerInterval);
             state = 'WAIT';
+            // Bekleme süresi: 1.2sn ile 4.2sn arası rastgele
             timerInterval = setTimeout(go, Math.random() * 3000 + 1200);
         }
     }, 800);
@@ -44,9 +44,15 @@ function startSequence() {
 
 function go() {
     state = 'GO';
-    lamps.forEach(l => l.classList.remove('on'));
+    // Kırmızıları söndür, YEŞİLLERİ YAK
+    lamps.forEach(l => {
+        l.classList.remove('on');
+        l.classList.add('green-on');
+    });
+    
     timer.style.color = "#fff";
     status.innerText = "BAAAAS!";
+    status.style.color = "var(--f1-green)";
     startTime = performance.now();
     updateClock();
 }
@@ -65,6 +71,9 @@ function stop() {
     timer.style.color = "var(--neon)";
     status.innerText = score < 0.25 ? "EFSANESİN!" : "BAŞARILI!";
     
+    // Yeşilleri söndür (isteğe bağlı, bitişte kalsın dersen bu satırı silebilirsin)
+    // resetLamps(); 
+
     log(`DENEME ${++attempt}`, score.toFixed(3) + "s", false);
     save(score);
     showReset();
@@ -126,4 +135,9 @@ function resetUI() {
     resetBtn.style.display = "none";
 }
 
-function resetLamps() { lamps.forEach(l => l.classList.remove('on')); }
+function resetLamps() { 
+    lamps.forEach(l => {
+        l.classList.remove('on');
+        l.classList.remove('green-on');
+    }); 
+}

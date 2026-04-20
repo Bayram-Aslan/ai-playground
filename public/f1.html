@@ -2,11 +2,17 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>F1 ARENA | NEURAL INTERFACE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --f1-red: #ff1e1e; --bg: #030303; --neon: #00ff88; --glass: rgba(15, 15, 15, 0.95); }
+        :root { 
+            --f1-red: #ff1e1e; 
+            --bg: #030303; 
+            --neon: #00ff88; 
+            --f1-green: #00ff19; /* Yeşil ışık rengi eklendi */
+            --glass: rgba(15, 15, 15, 0.95); 
+        }
         
         body { 
             background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
@@ -20,6 +26,7 @@
         .wrapper {
             display: flex; align-items: center; justify-content: center;
             width: 100%; max-width: 1400px; gap: 30px; padding: 20px;
+            box-sizing: border-box;
         }
 
         .panel { 
@@ -37,43 +44,65 @@
         .list-item { display: flex; justify-content: space-between; padding: 10px 0; font-family: 'Orbitron'; font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
         /* Merkez Oyun Alanı */
-        .game-center { text-align: center; flex: 1; max-width: 500px; }
+        .game-center { text-align: center; flex: 1; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
         #status { font-family: 'Orbitron'; font-size: 1.2rem; margin-bottom: 20px; letter-spacing: 2px; color: var(--neon); min-height: 1.5em; }
-        #timer { font-family: 'Orbitron'; font-size: 6rem; font-weight: 900; color: rgba(255,255,255,0.05); margin: 10px 0; }
+        #timer { font-family: 'Orbitron'; font-size: 6rem; font-weight: 900; color: rgba(255,255,255,0.05); margin: 10px 0; line-height: 1; }
 
         .lights-box { 
             display: flex; gap: 15px; background: #0a0a0a; padding: 25px; 
             border-radius: 15px; border: 2px solid #222; margin-bottom: 30px; justify-content: center; 
         }
         .lamp-col { display: flex; flex-direction: column; gap: 10px; }
-        .lamp { width: 50px; height: 50px; background: #1a1a1a; border-radius: 50%; border: 3px solid #000; }
+        .lamp { width: 50px; height: 50px; background: #1a1a1a; border-radius: 50%; border: 3px solid #000; transition: background 0.1s, box-shadow 0.1s; }
+        
+        /* Işık Durumları */
         .lamp.red.on { background: var(--f1-red); box-shadow: 0 0 35px var(--f1-red); }
+        .lamp.green-on { background: var(--f1-green) !important; box-shadow: 0 0 40px var(--f1-green) !important; border-color: #004400; }
 
         /* Ana Buton */
         .main-btn { 
             background: #fff; color: #000; border: none; padding: 18px 0; width: 100%; 
             max-width: 320px; font-family: 'Rajdhani', sans-serif; font-weight: 800; 
             font-size: 2.2rem; border-radius: 10px; cursor: pointer; text-transform: uppercase;
+            touch-action: manipulation;
         }
         .btn-reset { background: var(--f1-red); color: #fff; margin-top: 20px; display: none; }
 
-        .back-nav { position: absolute; bottom: 20px; color: #444; text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; }
+        /* Mobil Geri Tuşu - Modern Stil */
+        .back-nav { 
+            position: fixed; top: 20px; left: 20px; color: #fff; text-decoration: none; 
+            font-family: 'Orbitron'; font-size: 0.75rem; background: rgba(255,255,255,0.1); 
+            padding: 10px 15px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2);
+            z-index: 1000; transition: 0.3s;
+        }
+        .back-nav:hover { background: var(--f1-red); }
 
         /* --- MOBİL UYUM (RESPONSIVE) --- */
         @media (max-width: 1024px) {
-            .wrapper { flex-direction: column; padding-top: 80px; }
-            .panel { width: 90%; max-width: 350px; }
-            .stats-left { order: 2; border-left: 4px solid var(--neon); }
-            .game-center { order: 1; margin-bottom: 20px; }
-            .history-right { order: 3; border-right: 4px solid var(--f1-red); }
+            body { align-items: flex-start; padding-top: 60px; }
+            .wrapper { flex-direction: column; align-items: center; gap: 20px; }
+            .panel { width: 100%; max-width: 350px; box-sizing: border-box; }
+            
+            .stats-left { order: 2; border-top: 3px solid var(--neon); }
+            .game-center { order: 1; width: 100%; }
+            .history-right { order: 3; border-top: 3px solid var(--f1-red); }
+            
             #timer { font-size: 4.5rem; }
-            .lamp { width: 40px; height: 40px; }
-            .back-nav { position: relative; margin: 30px 0; }
+            .lamp { width: 42px; height: 42px; }
+            .lights-box { gap: 10px; padding: 15px; }
+
+            .back-nav { 
+                top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); 
+                width: 80%; max-width: 280px; text-align: center;
+                background: rgba(40, 40, 40, 0.9);
+            }
         }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
+
+    <a href="/" class="back-nav">← LOBİYE DÖN</a>
 
     <div class="wrapper">
         <div class="panel stats-left">
@@ -93,17 +122,15 @@
                 <div class="lamp-col"><div class="lamp red"></div><div class="lamp red"></div></div>
             </div>
 
-            <button id="trigger" class="main-btn" onmousedown="handleAction()">BAŞLAT</button>
+            <button id="trigger" class="main-btn" onmousedown="handleAction()" ontouchstart="handleAction(); event.preventDefault();">BAŞLAT</button>
             <button id="reset-btn" class="main-btn btn-reset" onclick="resetUI()">Sıfırla</button>
         </div>
 
         <div class="panel history-right">
             <div class="title" style="color:var(--f1-red)">Mission Logs</div>
-            <div id="history-list" style="max-height: 300px; overflow-y: auto;"></div>
+            <div id="history-list" style="max-height: 250px; overflow-y: auto;"></div>
         </div>
     </div>
-
-    <a href="/" class="back-nav">← RETURN TO LOBBY</a>
 
     <script src="games/f1.js"></script>
 </body>
