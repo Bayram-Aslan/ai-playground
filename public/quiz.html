@@ -6,92 +6,115 @@
     <title>ELECTRO-BATTLE | ARENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root { --neon: #00ff88; --bg: #050505; --panel: rgba(15,15,15,0.98); --danger: #ff1e1e; }
-        
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
-        
-        /* ÜST NAVİGASYON */
-        .top-nav {
-            width: 100%; height: 60px; background: rgba(0,0,0,0.9); border-bottom: 1px solid #222;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-            box-sizing: border-box; z-index: 100;
-        }
-        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; font-size: 1rem; }
-        .exit-btn {
-            background: rgba(255, 30, 30, 0.1); border: 1px solid var(--danger); color: var(--danger);
-            padding: 8px 15px; border-radius: 5px; font-family: 'Orbitron'; font-size: 0.7rem;
-            text-decoration: none; transition: 0.3s;
-        }
-        .exit-btn:hover { background: var(--danger); color: white; }
-
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; box-sizing: border-box; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .grid-bg { position: fixed; inset: 0; background-image: radial-gradient(circle at center, #111 0%, #000 100%); z-index: -1; }
+        
+        .top-nav { width: 100%; height: 60px; background: rgba(0,0,0,0.9); border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; }
+        
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 20px; box-sizing: border-box; }
 
-        /* LOBİ */
-        #lobby { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 450px; }
-        .user-count { font-family: 'Orbitron'; color: var(--neon); font-size: 0.9rem; margin-bottom: 20px; }
-        .ready-btn { background: var(--neon); color: black; border: none; padding: 20px 0; width: 100%; font-size: 1.8rem; font-family: 'Orbitron'; font-weight: 900; border-radius: 12px; cursor: pointer; }
-        .ready-btn.waiting { background: #333; color: #777; cursor: not-allowed; }
+        .init-box { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 600px; text-align: center; box-shadow: 0 0 50px rgba(0,255,136,0.1); }
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
+        
+        .opt-btn { background: #0a0a0a; border: 2px solid #222; color: white; padding: clamp(15px, 3vw, 20px); font-size: 1rem; border-radius: 12px; cursor: pointer; transition: 0.3s; font-family: 'Orbitron'; font-weight: 700; }
+        .opt-btn:hover { border-color: var(--neon); background: rgba(0,255,136,0.05); transform: translateY(-3px); }
 
-        /* ARENA */
+        input { background: #111; border: 1px solid #333; color: white; padding: 15px; width: 100%; border-radius: 10px; font-family: 'Orbitron'; text-align: center; font-size: 1rem; margin-bottom: 15px; }
+        
         #arena { width: 100%; max-width: 1100px; display: none; grid-template-columns: 1fr 320px; gap: 20px; }
         .question-zone { background: var(--panel); padding: 30px; border-radius: 15px; border: 1px solid #222; text-align: center; position: relative; }
         #timer-bar { position: absolute; top: 0; left: 0; height: 6px; background: var(--neon); width: 100%; transition: linear 0.1s; }
-        #q-text { font-size: 1.8rem; margin: 30px 0; min-height: 80px; line-height: 1.2; }
         
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .opt { background: #0a0a0a; border: 2px solid #222; color: white; padding: 20px; font-size: 1.2rem; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Rajdhani'; font-weight: 700; }
-        
-        /* SIRALAMA */
-        .leaderboard { background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid #222; }
-        .lb-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        .leaderboard { background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid #333; }
         .lb-item { display: flex; justify-content: space-between; padding: 10px; font-size: 0.85rem; border-bottom: 1px solid #1a1a1a; font-family: 'Orbitron'; }
-        .lb-item.me { background: rgba(0,255,136,0.1); color: var(--neon); border-radius: 5px; }
-        
-        #feedback-box { margin-top: 20px; font-family: 'Orbitron'; font-size: 0.9rem; min-height: 50px; }
+        .lb-item.me { background: rgba(0,255,136,0.1); color: var(--neon); border-left: 3px solid var(--neon); }
 
-        /* MOBİL UYUM */
-        @media (max-width: 768px) {
-            #arena { grid-template-columns: 1fr; }
-            .leaderboard { order: 2; }
-            .question-zone { order: 1; padding: 20px; }
-            #q-text { font-size: 1.4rem; }
-            .options-grid { grid-template-columns: 1fr; }
-            .opt { padding: 15px; font-size: 1.1rem; }
-            .top-nav { padding: 0 10px; }
-            .nav-logo { font-size: 0.8rem; }
-        }
+        #lobby { display: none; text-align: center; }
+        .ready-btn { background: var(--neon); color: black; border: none; padding: 18px; width: 100%; font-size: 1.3rem; font-family: 'Orbitron'; font-weight: 900; border-radius: 12px; cursor: pointer; }
+
+        /* BİTİŞ EKRANI */
+        #end-screen { display: none; flex-direction: column; align-items: center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin: 20px 0; }
+        .stat-card { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid #222; }
+        .stat-val { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon); display: block; }
+        .stat-label { font-size: 0.6rem; color: #666; text-transform: uppercase; }
+        .rank-highlight { font-family: 'Orbitron'; font-size: 3rem; color: gold; text-shadow: 0 0 20px rgba(255,215,0,0.4); margin: 10px 0; }
+        
+        @media (max-width: 768px) { #arena { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
-
     <nav class="top-nav">
-        <div class="nav-logo">ELECTRO-BATTLE // ARENA</div>
-        <a href="/" class="exit-btn">LOBİYE DÖN</a>
+        <div class="nav-logo">QUIZ ARENA // MISSION</div>
+        <a href="/" style="color:var(--danger); text-decoration:none; font-family:'Orbitron'; font-size:0.7rem; border:1px solid var(--danger); padding:5px 10px; border-radius:5px;">LOBİYE DÖN</a>
     </nav>
 
     <div class="main-content">
-        <div id="lobby">
-            <div class="user-count">AKTİF OPERATÖR: <span id="count">1</span></div>
-            <h1 style="font-family: 'Orbitron'; font-size: 2rem; margin-bottom: 25px;">HAZIR MISIN?</h1>
-            <button id="ready-btn" class="ready-btn" onclick="setReady()">BAŞLA</button>
-            <div id="countdown" style="font-size: 1.5rem; margin-top: 20px; font-family: 'Orbitron'; color: var(--neon);"></div>
+        <div id="init-screen" class="init-box">
+            <h2 style="font-family:'Orbitron'; color:var(--neon); margin-bottom:5px;">OPERASYON BÖLGESİ</h2>
+            <p style="color:#555; font-size:0.8rem; margin-bottom:25px;">BİR KATEGORİ SEÇ VEYA ODAYA KATIL</p>
+            <div class="category-grid">
+                <button class="opt-btn" onclick="selectCategory('elektrik')">⚡ ELEKTRİK</button>
+                <button class="opt-btn" onclick="selectCategory('spor')">⚽ SPOR</button>
+                <button class="opt-btn" onclick="selectCategory('genel')">🧠 GENEL KÜLTÜR</button>
+                <button class="opt-btn" onclick="selectCategory('tarih')">📜 TARİH</button>
+            </div>
+            <div style="border-top:1px solid #222; margin:20px 0; padding-top:20px;">
+                <input type="text" id="room-input" placeholder="ODA KODU (ÖR: AKU101)">
+                <button class="ready-btn" style="font-size:1rem;" onclick="joinMultiplayer()">ÇOKLU OYUNCUYA BAĞLAN</button>
+            </div>
+        </div>
+
+        <div id="lobby" class="init-box">
+            <h1 id="lobby-title" style="font-family:'Orbitron';">HAZIR MISIN?</h1>
+            <div id="user-info-lobby" style="color:var(--neon); margin-bottom:20px; font-family:'Orbitron'; font-size:0.8rem;"></div>
+            <button id="start-trigger" class="ready-btn" onclick="triggerStart()">BAŞLAT</button>
+            <div id="countdown" style="font-size:2rem; margin-top:20px; font-family:'Orbitron'; color:var(--neon);"></div>
         </div>
 
         <div id="arena">
             <div class="question-zone">
                 <div id="timer-bar"></div>
-                <div id="q-number" style="color: #555; margin-bottom: 10px; font-family: 'Orbitron'; font-size: 0.7rem;">MISSION: 1 / 10</div>
-                <h2 id="q-text">Veri Bekleniyor...</h2>
-                <div id="options" class="options-grid"></div>
-                <div id="feedback-box"></div>
+                <div id="q-number" style="color:#555; font-family:'Orbitron'; font-size:0.7rem; margin-bottom:15px;">MISSION: 1 / 10</div>
+                <h2 id="q-text" style="min-height:80px;">Veri Yükleniyor...</h2>
+                <div id="options" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"></div>
+                <div id="feedback-box" style="margin-top:20px; font-family:'Orbitron'; min-height:40px;"></div>
+            </div>
+            <div class="leaderboard">
+                <div style="font-family:'Orbitron'; color:var(--neon); text-align:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-size:0.8rem;">SIRALAMA</div>
+                <div id="lb-list"></div>
+            </div>
+        </div>
+
+        <div id="end-screen" class="init-box">
+            <h2 style="font-family:'Orbitron'; color:var(--neon);">GÖREV SONU RAPORU</h2>
+            <div class="rank-highlight" id="final-rank">#1</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">TOPLAM PUAN</span>
+                    <span class="stat-val" id="final-score">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">DOĞRU</span>
+                    <span class="stat-val" id="final-correct" style="color:var(--neon);">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">BAŞARI</span>
+                    <span class="stat-val" id="final-ratio" style="color:gold;">%0</span>
+                </div>
             </div>
 
-            <div class="leaderboard">
-                <div class="lb-title">TOP 10 RANKING</div>
-                <div id="lb-list"></div>
+            <div id="end-message" style="font-family:'Orbitron'; margin-bottom:25px; font-size:0.9rem;">OPERASYON BAŞARIYLA TAMAMLANDI.</div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; width:100%;">
+                <button class="ready-btn" onclick="restartGame()">YENİDEN DENE</button>
+                <button class="opt-btn" style="padding:10px;" onclick="location.href='/'">LOBİYE DÖN</button>
             </div>
         </div>
     </div>

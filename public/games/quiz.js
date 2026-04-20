@@ -1,43 +1,54 @@
-// 100 SORULUK HAVUZ ÖRNEĞİ (Geliştirilebilir)
-const questionPool = [
-    {q: "Akımı sınırlayan devre elemanı hangisidir?", a: ["Diyot", "Direnç", "Bobin", "Transformatör"], c: 1},
-    {q: "S7-1200 hangi markanın otomasyon ürünüdür?", a: ["ABB", "Delta", "Siemens", "Schneider"], c: 2},
-    {q: "Gerilimi değiştiren makineler hangisidir?", a: ["Motor", "Üreteç", "Transformatör", "Kontaktör"], c: 2},
-    {q: "Elektronik devrelerde anahtarlama elemanı?", a: ["Transistör", "LDR", "Pil", "Hoparlör"], c: 0},
-    {q: "PIC16F84A mikrodenetleyicisi kaç pinlidir?", a: ["8", "14", "18", "40"], c: 2},
-    {q: "Kondansatörün birimi nedir?", a: ["Volt", "Farad", "Ohm", "Amper"], c: 1},
-    {q: "TIA Portal programında 'Network' nerede olur?", a: ["OB1", "CPU", "RAM", "SCADA"], c: 0},
-    {q: "Hangisi bir sensördür?", a: ["LED", "Röle", "LDR", "Motor"], c: 2},
-    {q: "12V 60Ah akü kaç Watt-saat enerji depolar?", a: ["720", "120", "60", "240"], c: 0},
-    {q: "Manyetik akı yoğunluğu birimi hangisidir?", a: ["Lümen", "Tesla", "Weber", "Lüks"], c: 1}
-];
+const socket = io();
+const userName = (JSON.parse(localStorage.getItem('user'))?.name || "OPERATÖR").toUpperCase();
 
-let currentQ = 0, myScore = 0, timer, timeLeft = 10, canAnswer = true;
-const userName = localStorage.getItem('user') || "OPERATÖR";
+const bigQuestionPool = {
+    elektrik: [
+        {q: "B=100.000 Gauss değeri kaç Tesla'dır?", a: ["0.1", "1", "10", "100"], c: 1}, //
+        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2},
+        {q: "Buck Converter devresi temel olarak ne yapar?", a: ["Gerilim Yükseltir", "Gerilim Düşürür", "Frekans Artırır", "AC Çıkış Verir"], c: 1},
+        {q: "Afyon Kocatepe Üniversitesi Elektrik Bölüm Başkanı kimdir?", a: ["Cenk Yavuz", "Ali Demir", "Veli Can", "Ahmet Ak"], c: 0} //
+    ],
+    spor: [
+        {q: "Fenerbahçe Spor Kulübü hangi yıl kurulmuştur?", a: ["1903", "1905", "1907", "1923"], c: 2} //
+    ],
+    genel: [{q: "Dünyanın en yüksek dağı hangisidir?", a: ["Everest", "K2", "Ağrı", "Fujiyama"], c: 0}],
+    tarih: [{q: "İstanbul kaç yılında fethedilmiştir?", a: ["1071", "1299", "1453", "1923"], c: 2}]
+};
 
-// Rakip Botlar
+let currentQuestionSet = [];
+let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10, canAnswer = true;
+let isMultiplayer = false;
+
 let players = [
-    {name: "AYHANCAN", score: 0},
-    {name: "CENK_HOCA", score: 0},
-    {name: "ROBOT_V3", score: 0},
-    {name: "ELECTRO_G", score: 0}
+    {name: "CENK_HOCA", score: 0, IQ: 0.90, speed: 1.1}, //
+    {name: "AYHANCAN", score: 0, IQ: 0.75, speed: 0.8}, //
+    {name: "ROBOT_V3", score: 0, IQ: 0.60, speed: 1.3}
 ];
 
-function setReady() {
-    const btn = document.getElementById('ready-btn');
-    btn.innerText = "HAZIR";
-    btn.classList.add('waiting');
-    btn.onclick = null;
-    
+function selectCategory(cat) {
+    currentQuestionSet = bigQuestionPool[cat];
+    if(!currentQuestionSet || currentQuestionSet.length === 0) return alert("Soru bekleniyor...");
+    document.getElementById('init-screen').style.display = 'none';
+    document.getElementById('lobby').style.display = 'block';
+    document.getElementById('user-info-lobby').innerText = `KATEGORİ: ${cat.toUpperCase()}`;
+}
+
+function joinMultiplayer() {
+    const room = document.getElementById('room-input').value.toUpperCase();
+    if(room.length < 3) return alert("Kod girin!");
+    isMultiplayer = true;
+    socket.emit('join_room', { roomName: room, username: userName });
+    document.getElementById('init-screen').style.display = 'none';
+    document.getElementById('lobby').style.display = 'block';
+}
+
+function triggerStart() {
+    document.getElementById('start-trigger').style.display = 'none';
     let cd = 3;
-    const cdDiv = document.getElementById('countdown');
     let interval = setInterval(() => {
-        cdDiv.innerText = `BAŞLIYOR: ${cd}`;
+        document.getElementById('countdown').innerText = cd;
         cd--;
-        if(cd < 0) {
-            clearInterval(interval);
-            startArena();
-        }
+        if(cd < 0) { clearInterval(interval); startArena(); }
     }, 1000);
 }
 
@@ -48,27 +59,26 @@ function startArena() {
 }
 
 function loadQuestion() {
-    if(currentQ >= 10) return endBattle();
-    canAnswer = true;
-    updateLeaderboard();
-    timeLeft = 10;
-    document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / 10`;
-    document.getElementById('feedback-box').innerHTML = "<span style='color:#555'>SEÇİMİNİ YAP...</span>";
+    if(currentQ >= currentQuestionSet.length) return endBattle();
+    canAnswer = true; timeLeft = 10; updateLeaderboard();
     
-    const qData = questionPool[currentQ];
+    const qData = currentQuestionSet[currentQ];
+    document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / ${currentQuestionSet.length}`;
     document.getElementById('q-text').innerText = qData.q;
+    document.getElementById('feedback-box').innerHTML = "";
+    
     const optDiv = document.getElementById('options');
     optDiv.innerHTML = '';
-
     qData.a.forEach((opt, i) => {
         const btn = document.createElement('button');
-        btn.className = 'opt';
+        btn.className = 'opt-btn';
         btn.innerText = opt;
         btn.onclick = () => checkAnswer(i);
         optDiv.appendChild(btn);
     });
 
     startTimer();
+    if(!isMultiplayer) simulateAIBots();
 }
 
 function startTimer() {
@@ -76,10 +86,7 @@ function startTimer() {
     timer = setInterval(() => {
         timeLeft -= 0.1;
         document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
-        if(timeLeft <= 0) {
-            clearInterval(timer);
-            if(canAnswer) checkAnswer(-1);
-        }
+        if(timeLeft <= 0) { clearInterval(timer); if(canAnswer) checkAnswer(-1); }
     }, 100);
 }
 
@@ -88,31 +95,37 @@ function checkAnswer(idx) {
     canAnswer = false;
     clearInterval(timer);
     
-    const correctIdx = questionPool[currentQ].c;
-    const buttons = document.querySelectorAll('.opt');
+    const correctIdx = currentQuestionSet[currentQ].c;
+    const buttons = document.querySelectorAll('.opt-btn');
     
     buttons.forEach((btn, i) => {
-        btn.style.cursor = "default";
         if(i === correctIdx) btn.style.borderColor = "var(--neon)";
         if(i === idx && i !== correctIdx) btn.style.borderColor = "var(--danger)";
     });
 
     if(idx === correctIdx) {
-        let timeBonus = Math.ceil(timeLeft);
-        let gain = 10 + timeBonus;
+        let gain = Math.ceil(10 + timeLeft);
         myScore += gain;
-        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>DOĞRU! +${gain} Puan</span>`;
+        correctCount++;
+        confetti({ particleCount: 80, spread: 60 });
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>SİSTEM DOĞRULANDI!</span>`;
     } else {
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>YANLIŞ! (Doğru Cevap: ${questionPool[currentQ].a[correctIdx]})</span>`;
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI VERİ!</span>`;
     }
 
-    players.forEach(p => { if(Math.random() > 0.4) p.score += Math.floor(Math.random() * 10 + 10); });
+    setTimeout(() => { currentQ++; loadQuestion(); }, 1800);
+}
 
-    setTimeout(() => {
-        currentQ++;
-        loadQuestion();
-    }, 2500);
+function simulateAIBots() {
+    players.forEach(p => {
+        if(p.name === userName) return;
+        setTimeout(() => {
+            if(!canAnswer && currentQ < currentQuestionSet.length) {
+                if(Math.random() < p.IQ) p.score += Math.floor(10 + Math.random() * 5);
+                updateLeaderboard();
+            }
+        }, Math.random() * 3000 + 2000);
+    });
 }
 
 function updateLeaderboard() {
@@ -122,22 +135,58 @@ function updateLeaderboard() {
     else me.score = myScore;
 
     players.sort((a, b) => b.score - a.score);
-    
-    const myPos = players.findIndex(p => p.name === userName);
-    if(myPos > 0) {
-        const diff = players[myPos-1].score - players[myPos].score;
-        document.getElementById('feedback-box').innerHTML += `<br><span style="font-size:0.7rem; color:#aaa">${players[myPos-1].name} ile aranda ${diff} puan var!</span>`;
-    }
-
-    list.innerHTML = players.slice(0, 10).map((p, i) => `
+    list.innerHTML = players.map((p, i) => `
         <div class="lb-item ${p.name === userName ? 'me' : ''}">
-            <span>${i+1}. ${p.name.toUpperCase()}</span>
+            <span>${i+1}. ${p.name}</span>
             <span>${p.score} P</span>
         </div>
     `).join('');
 }
 
 function endBattle() {
-    alert(`OPERASYON TAMAMLANDI!\nSKORUN: ${myScore}`);
-    window.location.href = "/";
+    clearInterval(timer);
+    
+    // Son bir kez liderlik tablosunu güncelle ve sıralamayı netleştir
+    updateLeaderboard();
+    const myRank = players.findIndex(p => p.name === userName) + 1;
+
+    // Arayüz geçişi
+    document.getElementById('arena').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'flex';
+    
+    // VERİLERİ YAZDIR (FOTOĞRAFTA ÇALIŞMAYAN KISIM BURASIYDI)
+    document.getElementById('final-rank').innerText = `#${myRank}`;
+    document.getElementById('final-score').innerText = myScore;
+    document.getElementById('final-correct').innerText = correctCount;
+    
+    // Başarı yüzdesi hesabı
+    const ratio = currentQuestionSet.length > 0 ? Math.round((correctCount / currentQuestionSet.length) * 100) : 0;
+    document.getElementById('final-ratio').innerText = `%${ratio}`;
+    
+    // Mesaj belirle
+    const msg = document.getElementById('end-message');
+    if(myRank === 1) msg.innerText = "LİDERLİK KOLTUĞUNDASIN OPERATÖR!";
+    else if(myRank <= 2) msg.innerText = "MÜKEMMEL ANALİZ, ZİRVEYE ÇOK YAKIN.";
+    else msg.innerText = "GÖREV TAMAMLANDI, VERİ ANALİZ EDİLDİ.";
+    
+    localStorage.setItem('quiz_best', Math.max(myScore, localStorage.getItem('quiz_best') || 0));
 }
+
+function restartGame() {
+    // Tüm oyun değişkenlerini sıfırla
+    currentQ = 0; 
+    myScore = 0; 
+    correctCount = 0;
+    players.forEach(p => p.score = 0);
+    
+    // UI'ı temizle ve başa dön
+    document.getElementById('end-screen').style.display = 'none';
+    document.getElementById('init-screen').style.display = 'block';
+    document.getElementById('start-trigger').style.display = 'block';
+    document.getElementById('countdown').innerText = "";
+    
+    // Liderlik tablosunu (LB) temizle
+    updateLeaderboard();
+}
+
+socket.on('user_joined', (data) => { console.log("Yeni oyuncu katıldı:", data.username); });

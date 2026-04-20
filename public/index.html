@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ARENA | HYPER-EVO HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -11,110 +11,108 @@
             --catcher: #ff8c00; --link: #00f7ff; --bg: #050505; --panel: rgba(10, 10, 10, 0.9); 
         }
 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body { 
             background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
-            margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column;
-            /* Arka plan ızgara animasyonu */
-            background-image: linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+            background-image: linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
             animation: gridMove 20s linear infinite;
+            overflow-x: hidden;
         }
 
         @keyframes gridMove {
             from { background-position: 0 0; }
-            to { background-position: 0 500px; }
+            to { background-position: 0 400px; }
         }
         
-        /* GİRİŞ VE PROFİL PANELİ */
+        /* GİRİŞ PANELİ */
         #register-screen { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000; 
+            position: fixed; inset: 0; background: var(--bg); z-index: 2000; 
             display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px;
         }
         .reg-box { 
-            background: var(--panel); padding: 40px; border: 1px solid #222; border-radius: 20px; 
-            text-align: center; width: 90%; max-width: 400px; backdrop-filter: blur(10px);
+            background: var(--panel); padding: clamp(20px, 5vw, 40px); border: 1px solid #222; border-radius: 20px; 
+            text-align: center; width: 100%; max-width: 450px; backdrop-filter: blur(10px);
             box-shadow: 0 0 50px rgba(0,255,136,0.1); 
         }
-        .avatar-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
-        .avatar-item { font-size: 2.5rem; cursor: pointer; padding: 10px; border-radius: 10px; border: 2px solid transparent; transition: 0.3s; }
-        .avatar-item.selected { border-color: var(--neon); background: rgba(0,255,136,0.1); transform: scale(1.1); }
+        .avatar-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .avatar-item { 
+            font-size: clamp(1.5rem, 5vw, 2.5rem); cursor: pointer; padding: 10px; 
+            border-radius: 12px; border: 2px solid transparent; transition: 0.3s; 
+        }
+        .avatar-item.selected { border-color: var(--neon); background: rgba(0,255,136,0.1); transform: scale(1.05); }
         
         input { 
             background: #111; border: 1px solid #333; color: white; padding: 15px; width: 100%; 
-            border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; 
-            font-family: 'Orbitron'; text-align: center; font-size: 1rem; 
+            border-radius: 10px; margin-bottom: 20px; font-family: 'Orbitron'; 
+            text-align: center; font-size: 1rem; outline: none;
         }
 
-        /* LOBİ ÜST NAVİGASYON */
+        /* LOBİ ÜST PANEL */
         .top-nav { 
-            width: 100%; padding: 20px; display: flex; justify-content: space-between; 
-            align-items: center; box-sizing: border-box; z-index: 100; 
+            width: 100%; padding: clamp(10px, 3vw, 20px); display: flex; 
+            justify-content: space-between; align-items: center; z-index: 100; 
         }
         .user-info { 
-            display: flex; align-items: center; gap: 12px; 
-            background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 50px; 
-            border: 1px solid #222; cursor: default; backdrop-filter: blur(5px);
+            display: flex; align-items: center; gap: 10px; 
+            background: rgba(255,255,255,0.03); padding: 8px 15px; border-radius: 50px; 
+            border: 1px solid #222; backdrop-filter: blur(5px);
         }
         
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
-        .btn-edit { 
-            color: var(--neon); font-family: 'Orbitron'; font-size: 0.7rem; 
-            cursor: pointer; border: 1px solid var(--neon); padding: 6px 12px; 
-            border-radius: 5px; transition: 0.3s;
+        .nav-actions { display: flex; gap: 10px; }
+        .btn-action { 
+            font-family: 'Orbitron'; font-size: 0.65rem; padding: 8px 12px; 
+            border-radius: 8px; cursor: pointer; transition: 0.3s; text-decoration: none;
         }
-        .btn-exit-red { 
-            color: #ff1e1e; font-family: 'Orbitron'; font-size: 0.7rem; 
-            cursor: pointer; letter-spacing: 1px; transition: 0.3s;
-            border: 1px solid #ff1e1e; padding: 6px 12px; border-radius: 5px;
-        }
+        .btn-edit { color: var(--neon); border: 1px solid var(--neon); }
+        .btn-exit { color: #ff1e1e; border: 1px solid #ff1e1e; }
 
-        /* LOBİ KARTLARI */
+        /* OYUN KARTLARI */
         #lobby-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .container { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 25px; width: 95%; max-width: 1300px; padding: 20px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; width: 95%; max-width: 1400px; padding: 20px; margin-bottom: 50px;
+        }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; padding: 10px; }
+            header h1 { font-size: 2.5rem !important; letter-spacing: 5px !important; }
         }
         
         .game-card { 
-            background: var(--panel); border: 1px solid #222; border-radius: 15px; padding: 25px; 
+            background: var(--panel); border: 1px solid #222; border-radius: 18px; padding: 25px; 
             cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            display: flex; flex-direction: column; justify-content: space-between; min-height: 200px;
-            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            min-height: 220px;
         }
-        .game-card::after {
-            content: ''; position: absolute; inset: 0; 
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
-            transform: translateX(-100%); transition: 0.5s;
-        }
-        .game-card:hover::after { transform: translateX(100%); }
-        .game-card:hover { transform: translateY(-10px); border-color: var(--neon); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .game-card:hover { transform: translateY(-8px); border-color: var(--neon); box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
         
-        .best-score-badge {
-            font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon);
-            background: rgba(0, 255, 136, 0.1); padding: 4px 8px; border-radius: 4px;
-            margin-top: 15px; align-self: flex-start; border: 1px solid rgba(0, 255, 136, 0.2);
-        }
-
-        .f1-card { border-top: 4px solid var(--f1); }
-        .quiz-card { border-top: 4px solid var(--quiz); }
-        .circle-card { border-top: 4px solid var(--neon); }
-        .battle-card { border-top: 4px solid var(--battle); }
-        .catcher-card { border-top: 4px solid var(--catcher); }
-        .link-card { border-top: 4px solid var(--link); }
-
-        .btn-save { 
-            background: var(--neon); color: black; border: none; padding: 15px; 
-            border-radius: 8px; font-family: 'Orbitron'; font-weight: 900; 
-            cursor: pointer; width: 100%; font-size: 1rem; 
-        }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .card-header h3 { margin: 0; font-family: 'Orbitron'; font-size: 1.2rem; }
         
+        .scores-box { margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
+        .score-row { 
+            display: flex; justify-content: space-between; font-family: 'Orbitron'; 
+            font-size: 0.65rem; padding: 5px 8px; border-radius: 5px; background: rgba(255,255,255,0.02);
+        }
+        .my-best { color: #fff; border-left: 2px solid #fff; }
+        .global-best { color: var(--neon); border-left: 2px solid var(--neon); }
+
+        .f1-card { border-top: 5px solid var(--f1); }
+        .quiz-card { border-top: 5px solid var(--quiz); }
+        .circle-card { border-top: 5px solid var(--neon); }
+        .battle-card { border-top: 5px solid var(--battle); }
+        .catcher-card { border-top: 5px solid var(--catcher); }
+        .link-card { border-top: 5px solid var(--link); }
+
         header h1 { 
-            font-family: 'Orbitron'; font-size: 4rem; letter-spacing:15px; margin:0; 
-            background: linear-gradient(to bottom, #fff, #666); 
-            -webkit-background-clip: text; background-clip: text; 
-            -webkit-text-fill-color: transparent; text-align: center;
-            filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
+            font-family: 'Orbitron'; font-size: clamp(3rem, 10vw, 5rem); letter-spacing: 15px; margin: 0; 
+            text-align: center; color: white; text-shadow: 0 0 30px rgba(0,255,136,0.2);
         }
 
         footer { margin-top: auto; padding: 30px; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; text-align: center; }
@@ -134,8 +132,7 @@
                 <div class="avatar-item" onclick="selectAvatar('🎯', this)">🎯</div>
                 <div class="avatar-item" onclick="selectAvatar('🛰️', this)">🛰️</div>
             </div>
-            <button class="btn-save" onclick="saveUser()">SİSTEMİ BAŞLAT</button>
-            <button onclick="terminateSession()" style="background:transparent; color:#ff1e1e; border:none; margin-top:15px; cursor:pointer; font-family:'Orbitron'; font-size:0.7rem;">SİTEDEN ÇIK</button>
+            <button style="background:var(--neon); color:black; border:none; padding:15px; border-radius:10px; font-family:'Orbitron'; font-weight:900; width:100%; cursor:pointer;" onclick="saveUser()">SİSTEMİ BAŞLAT</button>
             <p id="cancel-edit" onclick="closeRegister()" style="display:none; margin-top:15px; font-size:0.7rem; color:#444; cursor:pointer; font-family:'Orbitron';">VAZGEÇ</p>
         </div>
     </div>
@@ -147,8 +144,8 @@
                 <span id="nav-name" style="font-family:'Orbitron';">OPERATÖR</span>
             </div>
             <div class="nav-actions">
-                <div class="btn-edit" onclick="openProfile()">PROFİLİ DÜZENLE</div>
-                <div class="btn-exit-red" onclick="logout()">SİTEDEN ÇIK</div>
+                <div class="btn-action btn-edit" onclick="openProfile()">PROFİL</div>
+                <div class="btn-action btn-exit" onclick="logout()">ÇIKIŞ</div>
             </div>
         </nav>
 
@@ -159,34 +156,57 @@
 
         <div class="container">
             <div class="game-card f1-card" onclick="location.href='/f1.html'">
-                <h3>F1 REAKSİYON</h3>
-                <p>Işıklar söndüğünde reaksiyonunu göster!</p>
-                <div class="best-score-badge">BEST: <span id="best-f1">0.000s</span></div>
+                <div class="card-header"><h3>F1 REAKSİYON</h3><span>🏎️</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Işıklar söndüğünde en hızlı tepkiyi sen ver.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-f1">0.000s</span></div>
+                    <div class="score-row global-best">ARENA REKORU: 0.142s</div>
+                </div>
             </div>
+
             <div class="game-card quiz-card" onclick="location.href='/quiz.html'">
-                <h3>QUIZ ARENA</h3>
-                <p>Elektrik dünyasında rakiplerini bilgiyle ele!</p>
-                <div class="best-score-badge">BEST: <span id="best-quiz">0</span></div>
+                <div class="card-header"><h3>QUIZ ARENA</h3><span>🧠</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Zamana karşı yarış, rakiplerini bilgiyle ele.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-quiz">0</span></div>
+                    <div class="score-row global-best">ARENA REKORU: 245 P</div>
+                </div>
             </div>
+
             <div class="game-card circle-card" onclick="location.href='/circle.html'">
-                <h3>CIRCLE MASTER</h3>
-                <p>Hassasiyetini ve el becerini kanıtla!</p>
-                <div class="best-score-badge">BEST: <span id="best-circle">%0</span></div>
+                <div class="card-header"><h3>CIRCLE MASTER</h3><span>🎯</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Hassasiyetini göster, mükemmel daireyi çiz.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-circle">%0</span></div>
+                    <div class="score-row global-best">ARENA REKORU: %99.8</div>
+                </div>
             </div>
+
             <div class="game-card battle-card" onclick="location.href='/battle.html'">
-                <h3>POWER BATTLE</h3>
-                <p>Güç barını en tepede yakala!</p>
-                <div class="best-score-badge">BEST: <span id="best-battle">0</span></div>
+                <div class="card-header"><h3>POWER BATTLE</h3><span>⚡</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Gücü en yüksek noktada yakala ve vur.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-battle">0</span></div>
+                    <div class="score-row global-best">ARENA REKORU: 32 Win</div>
+                </div>
             </div>
+
             <div class="game-card catcher-card" onclick="location.href='/catcher.html'">
-                <h3>NEON CATCHER</h3>
-                <p>Hedefleri yakala, bombalardan kaç!</p>
-                <div class="best-score-badge">BEST: <span id="best-catcher">0</span></div>
+                <div class="card-header"><h3>NEON CATCHER</h3><span>💧</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Su yükselmeden hedefleri topla.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-catcher">0</span></div>
+                    <div class="score-row global-best">ARENA REKORU: 1240</div>
+                </div>
             </div>
+
             <div class="game-card link-card" onclick="location.href='/link.html'">
-                <h3>NEON LINK</h3>
-                <p>Hatları çakıştırmadan devreyi tamamla!</p>
-                <div class="best-score-badge">BEST: <span id="best-link">0</span></div>
+                <div class="card-header"><h3>NEON LINK</h3><span>🔗</span></div>
+                <p style="font-size:0.8rem; color:#aaa;">Hatları çakıştırmadan devreleri bağla.</p>
+                <div class="scores-box">
+                    <div class="score-row my-best">MY BEST: <span id="best-link">0</span></div>
+                    <div class="score-row global-best">ARENA REKORU: LVL 24</div>
+                </div>
             </div>
         </div>
 
@@ -197,31 +217,39 @@
         let currentAvatar = '⚡';
 
         function loadBestScores() {
-            document.getElementById('best-f1').innerText = localStorage.getItem('f1_best') || '0.000s';
+            // F1 Skoru (f1-top-scores dizisinden ilk elemanı al)
+            try {
+                const f1Data = JSON.parse(localStorage.getItem('f1-top-scores'));
+                if(f1Data && f1Data.length > 0) document.getElementById('best-f1').innerText = f1Data[0].score.toFixed(3) + 's';
+            } catch(e) {}
+
+            // Quiz Skoru
             document.getElementById('best-quiz').innerText = localStorage.getItem('quiz_best') || '0';
-            document.getElementById('best-circle').innerText = localStorage.getItem('circle_best') ? localStorage.getItem('circle_best') + '%' : '%0';
+
+            // Circle Skoru (circle-scores dizisinden ilk elemanı al)
+            try {
+                const circleData = JSON.parse(localStorage.getItem('circle-scores'));
+                if(circleData && circleData.length > 0) document.getElementById('best-circle').innerText = '%' + circleData[0].score.toFixed(1);
+            } catch(e) {}
+
+            // Diğer skorlar
             document.getElementById('best-battle').innerText = localStorage.getItem('battle_best') || '0';
             document.getElementById('best-catcher').innerText = localStorage.getItem('catcher_best') || '0';
             document.getElementById('best-link').innerText = localStorage.getItem('link_best') || '0';
         }
 
         function checkUser() {
-            try {
-                const userStr = localStorage.getItem('user');
-                if (!userStr) {
-                    document.getElementById('register-screen').style.display = 'flex';
-                    document.getElementById('lobby-screen').style.display = 'none';
-                } else {
-                    const user = JSON.parse(userStr);
-                    document.getElementById('nav-name').innerText = user.name.toUpperCase();
-                    document.getElementById('nav-avatar').innerText = user.avatar;
-                    document.getElementById('register-screen').style.display = 'none';
-                    document.getElementById('lobby-screen').style.display = 'flex';
-                    loadBestScores();
-                }
-            } catch (e) {
-                localStorage.removeItem('user');
-                location.reload();
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                document.getElementById('register-screen').style.display = 'flex';
+                document.getElementById('lobby-screen').style.display = 'none';
+            } else {
+                const user = JSON.parse(userStr);
+                document.getElementById('nav-name').innerText = user.name.toUpperCase();
+                document.getElementById('nav-avatar').innerText = user.avatar;
+                document.getElementById('register-screen').style.display = 'none';
+                document.getElementById('lobby-screen').style.display = 'flex';
+                loadBestScores();
             }
         }
 
@@ -233,7 +261,7 @@
 
         function saveUser() {
             const name = document.getElementById('username-input').value.trim();
-            if (name.length < 2) return alert("Lütfen isim gir!");
+            if (name.length < 2) return alert("Lütfen geçerli bir isim gir!");
             localStorage.setItem('user', JSON.stringify({ name, avatar: currentAvatar }));
             checkUser();
         }
@@ -247,14 +275,10 @@
         }
 
         function logout() {
-            if(confirm("Siteden çıkış yapılsın mı?")) {
+            if(confirm("Sistemden çıkış yapılsın mı?")) {
                 localStorage.removeItem('user');
                 location.reload();
             }
-        }
-
-        function terminateSession() {
-            window.location.href = "https://www.google.com";
         }
 
         function closeRegister() { document.getElementById('register-screen').style.display = 'none'; }
