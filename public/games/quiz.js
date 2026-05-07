@@ -1,20 +1,7 @@
 const socket = io();
-
-// Kullanıcı verisini çek
 const userData = JSON.parse(localStorage.getItem('user') || '{"name":"OPERATÖR","avatar":"🤖"}');
 const userName = userData.name.toUpperCase();
 const userIcon = userData.avatar;
-
-const bigQuestionPool = {
-    elektrik: [
-        {q: "Akımı sınırlayan devre elemanı hangisidir?", a: ["Diyot", "Direnç", "Bobin", "Transformatör"], c: 1},
-        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2},
-        {q: "Kondansatörün birimi nedir?", a: ["Volt", "Farad", "Ohm", "Amper"], c: 1}
-    ],
-    spor: [{q: "Fenerbahçe kaç yılında kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
-    tarih: [{q: "İstanbul kaç yılında fethedildi?", a: ["1071", "1299", "1453", "1923"], c: 1}],
-    genel: [{q: "Dünyanın en yüksek dağı hangisidir?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}]
-};
 
 // Bot rakipler
 let botPlayers = [
@@ -28,6 +15,14 @@ let currentQuestionSet = [], currentQ = 0, myScore = 0, timer, timeLeft = 10;
 let amIReady = false, canStartServer = false, selectedCategoryName = "elektrik", players = [];
 let isMultiplayer = false;
 
+// KARIŞTIRMA (SHUFFLE) ALGORİTMASI: Havuzdan rastgele 10 soru çeker
+function getRandomQuestions(category) {
+    // Array'i kopyala ve rastgele sırala
+    let shuffled = [...bigQuestionPool[category]].sort(() => 0.5 - Math.random());
+    // Sadece ilk 10 tanesini döndür
+    return shuffled.slice(0, 10);
+}
+
 window.onload = () => {
     const singleArea = document.getElementById('single-category-area');
     singleArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
@@ -36,12 +31,11 @@ window.onload = () => {
         </button>`).join('');
 };
 
-// --- BİREYSEL & ODA GİRİŞLERİ ---
 function startSinglePlayer(category) {
     isMultiplayer = false;
-    currentQuestionSet = bigQuestionPool[category];
+    currentQuestionSet = getRandomQuestions(category); // Rastgele 10 soru çekildi
     players = [...botPlayers]; 
-    startCountdown(); // Direkt geri sayıma gönder
+    startCountdown(); 
 }
 
 function joinMultiplayer() {
@@ -101,13 +95,11 @@ socket.on('update_player_list', (data) => {
     }
 });
 
-// YÖNETİCİ OYUNU BAŞLATTI
 socket.on('game_started_by_admin', (data) => {
-    currentQuestionSet = bigQuestionPool[data.category];
+    currentQuestionSet = getRandomQuestions(data.category); // Odada da rastgele 10 soru çekildi
     startCountdown();
 });
 
-// --- YENİ: 3-2-1 GERİ SAYIM MANTIĞI ---
 function startCountdown() {
     document.getElementById('init-screen').style.display = 'none';
     document.getElementById('lobby').style.display = 'none';
@@ -133,7 +125,6 @@ function startCountdown() {
     }, 1000);
 }
 
-// --- ORTAK OYUN MANTIĞI ---
 function loadQuestion() {
     if(currentQ >= 10 || currentQ >= currentQuestionSet.length) return endBattle();
     timeLeft = 10;
@@ -188,19 +179,15 @@ function checkAnswer(idx) {
         updateLeaderboard();
     }
     
-    // YENİ: Anında diğer soruya geçmek yerine 1.5 saniye sonra Ara Tabloyu göster
     setTimeout(() => { showRoundSummary(); }, 1500);
 }
 
-// --- YENİ: ARA PUAN TABLOSU ---
 function showRoundSummary() {
     document.getElementById('arena').style.display = 'none';
     
-    // Puanları sırala ve lideri bul
     players.sort((a, b) => b.score - a.score);
     const leader = players[0];
     
-    // Kendini bul ve sıralamanı hesapla
     let me = players.find(p => p.name === userName);
     if(!me) {
         me = {name: userName, score: myScore, icon: userIcon};
@@ -209,7 +196,6 @@ function showRoundSummary() {
     }
     const myRank = players.findIndex(p => p.name === userName) + 1;
     
-    // Ekrana Verileri Bas
     document.getElementById('round-rank').innerText = `#${myRank}`;
     const gapEl = document.getElementById('round-gap');
     
@@ -227,7 +213,6 @@ function showRoundSummary() {
     const rsScreen = document.getElementById('round-leaderboard');
     rsScreen.style.display = 'block';
     
-    // 4 Saniye sonra ara tabloyu kapat ve yeni soruya (veya bitişe) geç
     setTimeout(() => {
         rsScreen.style.display = 'none';
         currentQ++;
