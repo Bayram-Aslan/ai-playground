@@ -6,30 +6,20 @@ const userIcon = operatorData.icon;
 const bigQuestionPool = {
     elektrik: [
         {q: "B=100.000 Gauss değeri kaç Tesla'dır?", a: ["0.1", "1", "10", "100"], c: 1},
-        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2},
-        {q: "Buck Converter devresi temel olarak ne yapar?", a: ["Gerilim Yükseltir", "Gerilim Düşürür", "Frekans Artırır", "AC Çıkış Verir"], c: 1},
-        {q: "Afyon Kocatepe Üniversitesi Elektrik Bölüm Başkanı kimdir?", a: ["Cenk Yavuz", "Ali Demir", "Veli Can", "Ahmet Ak"], c: 0}
+        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2}
     ],
-    spor: [{q: "Fenerbahçe Spor Kulübü hangi yıl kurulmuştur?", a: ["1903", "1905", "1907", "1923"], c: 2}],
-    tarih: [{q: "İstanbul kaç yılında fethedilmiştir?", a: ["1071", "1299", "1453", "1923"], c: 2}],
-    genel: [{q: "Dünyanın en yüksek dağı hangisidir?", a: ["Everest", "K2", "Ağrı", "Fujiyama"], c: 0}],
-    bilim: [{q: "Suyun kimyasal formülü nedir?", a: ["H2O", "CO2", "O2", "CH4"], c: 0}],
-    edebiyat: [{q: "Sinekli Bakkal romanının yazarı kimdir?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
-    film: [{q: "Inception filminin yönetmeni kimdir?", a: ["Christopher Nolan", "Steven Spielberg", "James Cameron", "Quentin Tarantino"], c: 0}]
+    spor: [{q: "Fenerbahçe hangi yıl kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
+    tarih: [{q: "İstanbul fethi?", a: ["1071", "1453", "1299", "1923"], c: 1}],
+    genel: [{q: "En yüksek dağ?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
+    bilim: [{q: "H2O nedir?", a: ["Su", "Tuz", "Hava", "Şeker"], c: 0}],
+    edebiyat: [{q: "Sinekli Bakkal?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
+    film: [{q: "Inception?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
 };
 
 let currentQuestionSet = [];
-let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10, canAnswer = true;
-let isMultiplayer = false;
-let players = [];
-let selectedCategoryName = "elektrik";
-
-function selectCategory(cat) {
-    currentQuestionSet = bigQuestionPool[cat];
-    document.getElementById('init-screen').style.display = 'none';
-    document.getElementById('lobby').style.display = 'block';
-    showCategorySelection();
-}
+let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
+let isMultiplayer = false, amIReady = false;
+let players = [], selectedCategoryName = "elektrik";
 
 function joinMultiplayer() {
     const room = document.getElementById('room-input').value.toUpperCase();
@@ -49,9 +39,8 @@ function showCategorySelection() {
         catArea.style = "margin: 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;";
         document.getElementById('lobby').insertBefore(catArea, document.getElementById('start-trigger'));
     }
-    const cats = Object.keys(bigQuestionPool);
-    catArea.innerHTML = cats.map(c => `
-        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem; border:1px solid #333;">
+    catArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
+        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem;">
             ${c.toUpperCase()}
         </button>
     `).join('');
@@ -61,59 +50,50 @@ function showCategorySelection() {
 function setCategory(c) {
     selectedCategoryName = c;
     document.querySelectorAll('#category-area button').forEach(b => b.style.borderColor = "#333");
-    const activeBtn = document.getElementById(`btn-${c}`);
-    if(activeBtn) activeBtn.style.borderColor = "var(--neon)";
+    if(document.getElementById(`btn-${c}`)) document.getElementById(`btn-${c}`).style.borderColor = "var(--neon)";
 }
 
-// "HAZIR" Butonuna tıklandığında
-function triggerReady() {
-    socket.emit('player_ready');
-    const readyBtn = document.getElementById('ready-trigger-btn');
-    if(readyBtn) {
-        readyBtn.innerText = "HAZIRLIK TAMAM ✅";
-        readyBtn.disabled = true;
-        readyBtn.style.opacity = "0.5";
-        readyBtn.style.background = "rgba(0, 255, 136, 0.2)";
+// ANA BUTON FONKSİYONU
+function triggerAction() {
+    if(!amIReady) {
+        amIReady = true;
+        socket.emit('player_ready');
+    } else {
+        socket.emit('admin_start_game', { category: selectedCategoryName });
     }
 }
 
-// Sunucudan gelen oyuncu listesi ve 'başlatılabilir mi' bilgisini dinle
 socket.on('update_player_list', (data) => {
     document.getElementById('lobby-title').innerText = `ARENA: ${data.users.length} OPERATÖR`;
-    
-    let listArea = document.getElementById('player-list-area');
-    if(!listArea) {
-        listArea = document.createElement('div');
-        listArea.id = 'player-list-area';
-        listArea.style = "margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;";
-        document.getElementById('lobby').insertBefore(listArea, document.getElementById('category-area'));
-    }
-
+    let listArea = document.getElementById('player-list-area') || createListArea();
     listArea.innerHTML = data.users.map(u => `
-        <div style="background:${u.ready ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.05)'}; 
-                    border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; 
-                    padding:10px; border-radius:5px; font-family:'Orbitron'; font-size:0.7rem;">
+        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
             ${u.ready ? '✅' : '⏳'} ${u.icon} ${u.name}
-        </div>
-    `).join('');
+        </div>`).join('');
 
-    // Başlat butonu kilidi
-    const startBtn = document.getElementById('start-trigger');
-    if(data.canStart) {
-        startBtn.disabled = false;
-        startBtn.style.opacity = "1";
-        startBtn.innerText = "OPERASYONU BAŞLAT";
-        startBtn.style.boxShadow = "0 0 20px var(--neon)";
+    const btn = document.getElementById('start-trigger');
+    if(!amIReady) {
+        btn.innerText = "HAZIR OL";
+        btn.style.background = "white";
+        btn.style.color = "black";
+    } else if(data.canStart) {
+        btn.innerText = "OPERASYONU BAŞLAT";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.background = "var(--neon)";
     } else {
-        startBtn.disabled = true;
-        startBtn.style.opacity = "0.3";
-        startBtn.innerText = "HERKESİN HAZIR OLMASI BEKLENİYOR...";
-        startBtn.style.boxShadow = "none";
+        btn.innerText = "DİĞERLERİ BEKLENİYOR...";
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
     }
 });
 
-function triggerStart() {
-    socket.emit('admin_start_game', { category: selectedCategoryName });
+function createListArea() {
+    const la = document.createElement('div');
+    la.id = 'player-list-area';
+    la.style = "margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;";
+    document.getElementById('lobby').insertBefore(la, document.getElementById('category-area'));
+    return la;
 }
 
 socket.on('game_started_by_admin', (data) => {
@@ -134,17 +114,16 @@ function startCountdown() {
 
 function loadQuestion() {
     if(currentQ >= currentQuestionSet.length) return endBattle();
-    canAnswer = true; timeLeft = 10; updateLeaderboard();
+    timeLeft = 10; updateLeaderboard();
     const qData = currentQuestionSet[currentQ];
     document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / ${currentQuestionSet.length}`;
     document.getElementById('q-text').innerText = qData.q;
     document.getElementById('options').innerHTML = '';
     qData.a.forEach((opt, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'opt-btn';
-        btn.innerText = opt;
-        btn.onclick = () => checkAnswer(i);
-        document.getElementById('options').appendChild(btn);
+        const b = document.createElement('button');
+        b.className = 'opt-btn'; b.innerText = opt;
+        b.onclick = () => checkAnswer(i);
+        document.getElementById('options').appendChild(b);
     });
     startTimer();
 }
@@ -153,63 +132,38 @@ function startTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft -= 0.1;
-        if(document.getElementById('timer-bar')) document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
-        if(timeLeft <= 0) { clearInterval(timer); if(canAnswer) checkAnswer(-1); }
+        document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
+        if(timeLeft <= 0) { clearInterval(timer); checkAnswer(-1); }
     }, 100);
 }
 
 function checkAnswer(idx) {
-    if(!canAnswer) return;
-    canAnswer = false;
     clearInterval(timer);
-    const correctIdx = currentQuestionSet[currentQ].c;
-    const buttons = document.querySelectorAll('.opt-btn');
-    buttons.forEach((btn, i) => {
-        if(i === correctIdx) btn.style.borderColor = "var(--neon)";
-        if(i === idx && i !== correctIdx) btn.style.borderColor = "var(--danger)";
-    });
-    if(idx === correctIdx) {
-        let gain = Math.ceil(100 + (timeLeft * 10));
-        myScore += gain;
+    if(idx === currentQuestionSet[currentQ].c) {
+        myScore += Math.ceil(100 + (timeLeft * 10));
         correctCount++;
-        confetti({ particleCount: 100, spread: 70 });
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>DOĞRULANDI! +${gain}</span>`;
-    } else {
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI!</span>`;
+        confetti({ particleCount: 50, spread: 60 });
     }
-    if(isMultiplayer) socket.emit('submit_score', { username: userName, score: myScore });
-    setTimeout(() => { currentQ++; loadQuestion(); }, 2000);
+    socket.emit('submit_score', { username: userName, score: myScore });
+    setTimeout(() => { currentQ++; loadQuestion(); }, 1500);
 }
 
 function updateLeaderboard() {
     const list = document.getElementById('lb-list');
     let me = players.find(p => p.name === userName);
-    if(me) me.score = myScore;
-    else players.push({name: userName, score: myScore, icon: userIcon});
-
+    if(!me) players.push({name: userName, score: myScore, icon: userIcon}); else me.score = myScore;
     players.sort((a, b) => b.score - a.score);
-    list.innerHTML = players.map((p, i) => `
-        <div class="lb-item ${p.name === userName ? 'me' : ''}">
-            <span>${i+1}. ${p.icon || '🤖'} ${p.name}</span>
-            <span>${p.score} P</span>
-        </div>`).join('');
+    list.innerHTML = players.map((p, i) => `<div class="lb-item ${p.name === userName ? 'me' : ''}"><span>${i+1}. ${p.icon} ${p.name}</span><span>${p.score} P</span></div>`).join('');
 }
 
 socket.on('update_room_leaderboard', (data) => {
     let p = players.find(player => player.name === data.username);
-    if(p) p.score = data.score;
-    else players.push({name: data.username, score: data.score, icon: "👤"});
+    if(p) p.score = data.score; else players.push({name: data.username, score: data.score, icon: "👤"});
     updateLeaderboard();
 });
 
 function endBattle() {
-    clearInterval(timer);
     document.getElementById('arena').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
     document.getElementById('final-score').innerText = myScore;
-    document.getElementById('final-correct').innerText = correctCount;
-}
-
-function restartGame() {
-    location.reload();
 }
