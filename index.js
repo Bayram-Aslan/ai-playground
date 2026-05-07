@@ -15,7 +15,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let systemState = { totalOperators: 0 };
 
-// Odadaki kullanıcıları takip etmek için yardımcı fonksiyon
 function getRoomUsers(roomName) {
     const users = [];
     const clients = io.sockets.adapter.rooms.get(roomName);
@@ -23,7 +22,11 @@ function getRoomUsers(roomName) {
         clients.forEach(clientId => {
             const s = io.sockets.sockets.get(clientId);
             if (s && s.username) {
-                users.push({ name: s.username, icon: s.userIcon || "👤" });
+                users.push({ 
+                    name: s.username, 
+                    icon: s.userIcon || "👤", 
+                    ready: s.isReady || false 
+                });
             }
         });
     }
@@ -36,22 +39,35 @@ io.on('connection', (socket) => {
 
     socket.on('join_room', (data) => {
         socket.rooms.forEach(room => { if (room !== socket.id) socket.leave(room); });
-        
         socket.join(data.roomName);
         socket.username = data.username;
-        socket.userIcon = data.userIcon; // İkon desteği eklendi
+        socket.userIcon = data.userIcon;
+        socket.isReady = false;
         socket.currentRoom = data.roomName;
 
-        const roomUsers = getRoomUsers(data.roomName);
-        // Odadaki herkese güncel listeyi ve sayıyı gönder
         io.to(data.roomName).emit('update_player_list', {
-            users: roomUsers,
-            count: roomUsers.length
+            users: getRoomUsers(data.roomName)
         });
     });
 
-    socket.on('admin_start_game', () => {
-        if(socket.currentRoom) io.to(socket.currentRoom).emit('game_started_by_admin');
+    // Kullanıcı hazır butonuna bastığında
+    socket.on('player_ready', () => {
+        socket.isReady = true;
+        if(socket.currentRoom) {
+            const users = getRoomUsers(socket.currentRoom);
+            io.to(socket.currentRoom).emit('update_player_list', { users });
+            
+            // Eğer herkes hazırsa (opsiyonel otomatik başlatma için kontrol edilebilir)
+            const allReady = users.every(u => u.ready);
+            if(allReady) io.to(socket.currentRoom).emit('all_players_ready');
+        }
+    });
+
+    // Kategori seçildiğinde ve başlatıldığında
+    socket.on('admin_start_game', (data) => {
+        if(socket.currentRoom) {
+            io.to(socket.currentRoom).emit('game_started_by_admin', { category: data.category });
+        }
     });
 
     socket.on('submit_score', (data) => {
@@ -66,13 +82,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         systemState.totalOperators = Math.max(0, systemState.totalOperators - 1);
         io.emit('total_count', systemState.totalOperators);
-        
         if(socket.currentRoom) {
-            const roomUsers = getRoomUsers(socket.currentRoom);
-            io.to(socket.currentRoom).emit('update_player_list', {
-                users: roomUsers,
-                count: roomUsers.length
-            });
+            io.to(socket.currentRoom).emit('update_player_list', { users: getRoomUsers(socket.currentRoom) });
         }
     });
 });

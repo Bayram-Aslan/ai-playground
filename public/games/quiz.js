@@ -6,87 +6,111 @@ const userIcon = operatorData.icon;
 const bigQuestionPool = {
     elektrik: [
         {q: "B=100.000 Gauss değeri kaç Tesla'dır?", a: ["0.1", "1", "10", "100"], c: 1},
-        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2},
-        {q: "Buck Converter devresi temel olarak ne yapar?", a: ["Gerilim Yükseltir", "Gerilim Düşürür", "Frekans Artırır", "AC Çıkış Verir"], c: 1},
-        {q: "Afyon Kocatepe Üniversitesi Elektrik Bölüm Başkanı kimdir?", a: ["Cenk Yavuz", "Ali Demir", "Veli Can", "Ahmet Ak"], c: 0}
+        {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2}
     ],
-    spor: [{q: "Fenerbahçe Spor Kulübü hangi yıl kurulmuştur?", a: ["1903", "1905", "1907", "1923"], c: 2}],
-    genel: [{q: "Dünyanın en yüksek dağı hangisidir?", a: ["Everest", "K2", "Ağrı", "Fujiyama"], c: 0}],
-    tarih: [{q: "İstanbul kaç yılında fethedilmiştir?", a: ["1071", "1299", "1453", "1923"], c: 2}]
+    spor: [{q: "Fenerbahçe hangi yıl kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
+    tarih: [{q: "İstanbul'un fethi?", a: ["1071", "1453", "1299", "1923"], c: 1}],
+    genel: [{q: "En yüksek dağ?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
+    bilim: [{q: "Suyun formülü?", a: ["H2O", "CO2", "O2", "N2"], c: 0}],
+    edebiyat: [{q: "Sinekli Bakkal yazarı?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
+    film: [{q: "Inception yönetmeni?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
 };
 
 let currentQuestionSet = [];
-let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10, canAnswer = true;
+let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
 let isMultiplayer = false;
-let players = []; // Liderlik tablosu için
-
-function selectCategory(cat) {
-    currentQuestionSet = bigQuestionPool[cat];
-    document.getElementById('init-screen').style.display = 'none';
-    document.getElementById('lobby').style.display = 'block';
-    document.getElementById('user-info-lobby').innerText = `KATEGORİ: ${cat.toUpperCase()}`;
-}
+let players = [];
+let selectedCategoryName = "elektrik"; // Varsayılan
 
 function joinMultiplayer() {
     const room = document.getElementById('room-input').value.toUpperCase();
     if(room.length < 3) return alert("Hatalı Oda Kodu!");
     isMultiplayer = true;
     socket.emit('join_room', { roomName: room, username: userName, userIcon: userIcon });
+    
     document.getElementById('init-screen').style.display = 'none';
     document.getElementById('lobby').style.display = 'block';
+    showCategorySelection();
 }
 
-// --- YENİ: ODADAKİ KULLANICI LİSTESİNİ GÜNCELLE ---
+function showCategorySelection() {
+    const lobby = document.getElementById('lobby');
+    let catArea = document.getElementById('category-area');
+    if(!catArea) {
+        catArea = document.createElement('div');
+        catArea.id = 'category-area';
+        catArea.style = "margin: 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;";
+        lobby.insertBefore(catArea, document.getElementById('start-trigger'));
+    }
+    
+    const cats = Object.keys(bigQuestionPool);
+    catArea.innerHTML = cats.map(c => `
+        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem;">
+            ${c.toUpperCase()}
+        </button>
+    `).join('');
+    setCategory(selectedCategoryName);
+}
+
+function setCategory(c) {
+    selectedCategoryName = c;
+    document.querySelectorAll('#category-area button').forEach(b => b.style.borderColor = "rgba(255,255,255,0.1)");
+    const activeBtn = document.getElementById(`btn-${c}`);
+    if(activeBtn) activeBtn.style.borderColor = "var(--neon)";
+}
+
+// "HAZIR" Butonuna basıldığında
+function triggerReady() {
+    socket.emit('player_ready');
+    const btn = document.getElementById('start-trigger');
+    btn.innerText = "HAZIRLIK TAMAM";
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+}
+
 socket.on('update_player_list', (data) => {
-    const lobbyTitle = document.getElementById('lobby-title');
-    const startBtn = document.getElementById('start-trigger');
-    
-    lobbyTitle.innerText = `ODA MEVCUDU: ${data.count} OPERATÖR`;
-    
-    // Eğer odada bir liste alanı yoksa oluştur (Basit bir liste alanı varsayıyoruz)
+    document.getElementById('lobby-title').innerText = `ARENA: ${data.users.length} OPERATÖR`;
     let listArea = document.getElementById('player-list-area');
     if(!listArea) {
         listArea = document.createElement('div');
         listArea.id = 'player-list-area';
         listArea.style = "margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;";
-        document.getElementById('lobby').insertBefore(listArea, startBtn);
+        document.getElementById('lobby').insertBefore(listArea, document.getElementById('category-area'));
     }
 
     listArea.innerHTML = data.users.map(u => `
-        <div style="background:rgba(0,255,136,0.1); border:1px solid var(--neon); padding:10px 15px; border-radius:5px; font-family:'Orbitron'; font-size:0.8rem;">
-            ${u.icon} ${u.name}
+        <div style="background:${u.ready ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.05)'}; 
+                    border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; 
+                    padding:10px; border-radius:5px; font-family:'Orbitron'; font-size:0.7rem;">
+            ${u.ready ? '✅' : '⏳'} ${u.icon} ${u.name}
         </div>
     `).join('');
 });
 
+// YÖNETİCİ BAŞLATMA (Herkes hazır olunca veya sen basınca)
 function triggerStart() {
-    if(isMultiplayer) socket.emit('admin_start_game');
-    else startCountdown();
+    socket.emit('admin_start_game', { category: selectedCategoryName });
 }
 
-socket.on('game_started_by_admin', () => {
+socket.on('game_started_by_admin', (data) => {
+    currentQuestionSet = bigQuestionPool[data.category];
     startCountdown();
 });
 
 function startCountdown() {
-    document.getElementById('start-trigger').style.display = 'none';
-    let cd = 3;
-    let interval = setInterval(() => {
-        document.getElementById('countdown').innerText = cd;
-        cd--;
-        if(cd < 0) { clearInterval(interval); startArena(); }
-    }, 1000);
-}
-
-function startArena() {
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('arena').style.display = 'grid';
-    loadQuestion();
+    let cd = 3;
+    let interval = setInterval(() => {
+        document.getElementById('q-text').innerText = `BAŞLIYOR: ${cd}`;
+        cd--;
+        if(cd < 0) { clearInterval(interval); loadQuestion(); }
+    }, 1000);
 }
 
 function loadQuestion() {
     if(currentQ >= currentQuestionSet.length) return endBattle();
-    canAnswer = true; timeLeft = 10; updateLeaderboard();
+    timeLeft = 10; updateLeaderboard();
     const qData = currentQuestionSet[currentQ];
     document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / ${currentQuestionSet.length}`;
     document.getElementById('q-text').innerText = qData.q;
@@ -105,45 +129,33 @@ function startTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft -= 0.1;
-        if(document.getElementById('timer-bar')) document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
-        if(timeLeft <= 0) { clearInterval(timer); if(canAnswer) checkAnswer(-1); }
+        document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
+        if(timeLeft <= 0) { clearInterval(timer); checkAnswer(-1); }
     }, 100);
 }
 
 function checkAnswer(idx) {
-    if(!canAnswer) return;
-    canAnswer = false;
     clearInterval(timer);
     const correctIdx = currentQuestionSet[currentQ].c;
-    const buttons = document.querySelectorAll('.opt-btn');
-    buttons.forEach((btn, i) => {
-        if(i === correctIdx) btn.style.borderColor = "var(--neon)";
-        if(i === idx && i !== correctIdx) btn.style.borderColor = "var(--danger)";
-    });
     if(idx === correctIdx) {
         let gain = Math.ceil(100 + (timeLeft * 10));
         myScore += gain;
         correctCount++;
-        confetti({ particleCount: 100, spread: 70 });
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>DOĞRULANDI! +${gain}</span>`;
-    } else {
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI!</span>`;
+        confetti({ particleCount: 50, spread: 60 });
     }
-    if(isMultiplayer) socket.emit('submit_score', { username: userName, score: myScore });
-    setTimeout(() => { currentQ++; loadQuestion(); }, 2000);
+    socket.emit('submit_score', { username: userName, score: myScore });
+    setTimeout(() => { currentQ++; loadQuestion(); }, 1500);
 }
 
 function updateLeaderboard() {
     const list = document.getElementById('lb-list');
-    // Yerel skoru listede güncelle veya ekle
     let me = players.find(p => p.name === userName);
-    if(me) me.score = myScore;
-    else players.push({name: userName, score: myScore, icon: userIcon});
-
+    if(!me) players.push({name: userName, score: myScore, icon: userIcon});
+    else me.score = myScore;
     players.sort((a, b) => b.score - a.score);
     list.innerHTML = players.map((p, i) => `
         <div class="lb-item ${p.name === userName ? 'me' : ''}">
-            <span>${i+1}. ${p.icon || '🤖'} ${p.name}</span>
+            <span>${i+1}. ${p.icon} ${p.name}</span>
             <span>${p.score} P</span>
         </div>`).join('');
 }
@@ -156,17 +168,7 @@ socket.on('update_room_leaderboard', (data) => {
 });
 
 function endBattle() {
-    clearInterval(timer);
-    const myRank = players.findIndex(p => p.name === userName) + 1;
     document.getElementById('arena').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
-    document.getElementById('final-rank').innerText = `#${myRank}`;
     document.getElementById('final-score').innerText = myScore;
-    document.getElementById('final-correct').innerText = correctCount;
-    const ratio = currentQuestionSet.length > 0 ? Math.round((correctCount / currentQuestionSet.length) * 100) : 0;
-    document.getElementById('final-ratio').innerText = `%${ratio}`;
-}
-
-function restartGame() {
-    location.reload(); // En temiz sıfırlama için
 }
