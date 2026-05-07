@@ -18,7 +18,7 @@ const bigQuestionPool = {
 
 let currentQuestionSet = [];
 let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
-let isMultiplayer = false, amIReady = false;
+let isMultiplayer = false, amIReady = false, canServerStart = false;
 let players = [], selectedCategoryName = "elektrik";
 
 function joinMultiplayer() {
@@ -53,18 +53,20 @@ function setCategory(c) {
     if(document.getElementById(`btn-${c}`)) document.getElementById(`btn-${c}`).style.borderColor = "var(--neon)";
 }
 
-// ANA BUTON FONKSİYONU
+// BUTON TIKLAMA MANTIĞI
 function triggerAction() {
     if(!amIReady) {
         amIReady = true;
         socket.emit('player_ready');
-    } else {
+    } else if(canServerStart) {
         socket.emit('admin_start_game', { category: selectedCategoryName });
     }
 }
 
 socket.on('update_player_list', (data) => {
     document.getElementById('lobby-title').innerText = `ARENA: ${data.users.length} OPERATÖR`;
+    canServerStart = data.canStart; // Sunucudan gelen başlatılabilirlik durumu
+    
     let listArea = document.getElementById('player-list-area') || createListArea();
     listArea.innerHTML = data.users.map(u => `
         <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
@@ -72,19 +74,23 @@ socket.on('update_player_list', (data) => {
         </div>`).join('');
 
     const btn = document.getElementById('start-trigger');
+    btn.disabled = false; // Buton her zaman tıklanabilir (Hazır vermek için)
+    btn.style.opacity = "1";
+
     if(!amIReady) {
         btn.innerText = "HAZIR OL";
         btn.style.background = "white";
         btn.style.color = "black";
     } else if(data.canStart) {
         btn.innerText = "OPERASYONU BAŞLAT";
-        btn.disabled = false;
-        btn.style.opacity = "1";
         btn.style.background = "var(--neon)";
+        btn.style.color = "black";
+        btn.style.boxShadow = "0 0 20px var(--neon)";
     } else {
         btn.innerText = "DİĞERLERİ BEKLENİYOR...";
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
+        btn.style.background = "#222";
+        btn.style.color = "#666";
+        btn.style.boxShadow = "none";
     }
 });
 

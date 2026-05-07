@@ -37,7 +37,6 @@ function updateRoomState(roomName) {
     if(!roomName) return;
     const users = getRoomUsers(roomName);
     const allReady = users.length > 0 && users.every(u => u.ready);
-    
     io.to(roomName).emit('update_player_list', { 
         users: users,
         count: users.length,
@@ -89,4 +88,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => { console.log(`PORT ${PORT} READY`); });
+server.listen(PORT, () => { console.log(`ARENA SERVER RUNNING ON ${PORT}`); });
