@@ -3,8 +3,6 @@ const userData = JSON.parse(localStorage.getItem('user') || '{"name":"OPERATÖR"
 const userName = userData.name.toUpperCase();
 const userIcon = userData.avatar;
 
-// NOT: bigQuestionPool değişkeni HTML'de senden gelen "sorular.js" dosyasından otomatik alınacaktır.
-
 let botPlayers = [
     {name: "AYHANCAN", score: 0, icon: "⚡"},
     {name: "CENK_HOCA", score: 0, icon: "👨‍🏫"},
@@ -12,13 +10,13 @@ let botPlayers = [
     {name: "ELECTRO_G", score: 0, icon: "🎯"}
 ];
 
-let currentQuestionSet = [], currentQ = 0, myScore = 0, timer, timeLeft = 20; // SÜRE 20 SANİYE
+let currentQuestionSet = [], currentQ = 0, myScore = 0, timer, timeLeft = 20; 
 let amIReady = false, canStartServer = false, selectedCategoryName = "elektrik", players = [];
 let isMultiplayer = false;
-let canAnswer = true; // İkinci kez tıklamayı önlemek için kilit
-let hasShownSummary = false; // Tur tablosunun çift açılmasını önler
+let canAnswer = true; 
+let hasShownSummary = false; 
 
-// Havuzdan 10 rastgele soru çeken algoritma
+// Soru Çekme İşlemi (sorular.js'den alır)
 function getRandomQuestions(category) {
     let pool = (typeof bigQuestionPool !== 'undefined') ? bigQuestionPool[category] : [];
     if(!pool || pool.length === 0) return [];
@@ -26,7 +24,6 @@ function getRandomQuestions(category) {
     return shuffled.slice(0, 10);
 }
 
-// Sayfa yüklendiğinde Ana ekrandaki Bireysel Kategorileri bas
 window.onload = () => {
     if(typeof bigQuestionPool !== 'undefined') {
         const singleArea = document.getElementById('single-category-area');
@@ -56,7 +53,7 @@ function joinMultiplayer() {
         multiArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
             <button onclick="setMultiCat('${c}')" class="cat-btn" id="btn-${c}">${c.toUpperCase()}</button>
         `).join('');
-        setMultiCat(Object.keys(bigQuestionPool)[0]); // İlk kategoriyi varsayılan seç
+        setMultiCat(Object.keys(bigQuestionPool)[0]); 
     }
 }
 
@@ -75,7 +72,6 @@ function triggerAction() {
     }
 }
 
-// ODA GÜNCELLEMELERİ
 socket.on('update_player_list', (data) => {
     canStartServer = data.canStart;
     document.getElementById('count').innerText = data.users.length;
@@ -96,7 +92,6 @@ socket.on('game_started_by_admin', (data) => {
     startCountdown();
 });
 
-// GERİ SAYIM
 function startCountdown() {
     document.getElementById('init-screen').style.display = 'none';
     document.getElementById('lobby').style.display = 'none';
@@ -122,16 +117,15 @@ function startCountdown() {
     }, 1000);
 }
 
-// YENİ SORU YÜKLEME
 function loadQuestion() {
     if(currentQ >= 10 || currentQ >= currentQuestionSet.length) return endBattle();
     
-    timeLeft = 20; // 20 SANİYE KURALI
+    timeLeft = 20; 
     canAnswer = true;
     hasShownSummary = false;
     updateLeaderboard(); 
     
-    if(isMultiplayer) socket.emit('question_loaded'); // Sunucuya yeni soruya geçildiğini bildir
+    if(isMultiplayer) socket.emit('question_loaded');
     
     const qData = currentQuestionSet[currentQ];
     document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / 10`;
@@ -152,34 +146,29 @@ function loadQuestion() {
     startTimer();
 }
 
-// ZAMANLAYICI (20 SANİYE ÜZERİNDEN HESAPLANIR)
 function startTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft -= 0.1;
-        // % hesaplaması: 20 saniye üzerinden olduğu için 100 / 20 = 5 çarpanı kullanılır.
-        document.getElementById('timer-bar').style.width = (timeLeft * 5) + "%";
+        document.getElementById('timer-bar').style.width = (timeLeft * 5) + "%"; 
         
         if(timeLeft <= 0) { 
             clearInterval(timer); 
             if(canAnswer) {
                 canAnswer = false;
                 document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>SÜRE DOLDU!</span>`;
-                // Şıkları kitle
                 document.querySelectorAll('.opt').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
-                if(isMultiplayer) socket.emit('player_answered'); // Soru süresi bitince cevaplamış sayılır
+                if(isMultiplayer) socket.emit('player_answered'); 
             }
-            if(!hasShownSummary) showRoundSummary(); // Süre bitince tabloya geç
+            if(!hasShownSummary) showRoundSummary(); 
         }
     }, 100);
 }
 
-// CEVAP KONTROLÜ (ÇOKLU TIKLAMA ENGELLENDİ & SÜRE ÇARPANI EKLENDİ)
 function checkAnswer(idx) {
-    if(!canAnswer) return; // İkinci kez tıklamayı engeller
+    if(!canAnswer) return; 
     canAnswer = false;
     
-    // Tüm butonları pasif hale getir
     const opts = document.querySelectorAll('.opt');
     opts.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
     
@@ -189,8 +178,8 @@ function checkAnswer(idx) {
         opts[idx].style.borderColor = 'var(--neon)';
         opts[idx].style.opacity = '1';
         
-        // PUANLAMA: Sabit 100 Puan + Kalan süre (Saniye başına 10 puan)
-        let gain = Math.ceil(100 + (timeLeft * 10)); 
+        // YENİ PUANLAMA MANTIĞI: 20 PUAN SABİT + KALAN SANİYE
+        let gain = 20 + Math.ceil(timeLeft); 
         myScore += gain; 
         confetti({ particleCount: 50, spread: 60 });
         document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>SİSTEM DOĞRULANDI! +${gain} Puan</span>`;
@@ -206,27 +195,24 @@ function checkAnswer(idx) {
     
     if(isMultiplayer) {
         socket.emit('submit_score', { username: userName, score: myScore });
-        socket.emit('player_answered'); // Sunucuya cevapladığımı bildir
+        socket.emit('player_answered'); 
         document.getElementById('feedback-box').innerHTML += `<br><span style="font-size:0.75rem; color:#888;">Diğer operatörler bekleniyor...</span>`;
     } else {
-        // Tek Kişilik Modda Botların Oynaması
+        // Botların yeni puanlama mantığına göre simülasyonu
         players.forEach(p => { 
-            if(p.name !== userName && Math.random() > 0.3) p.score += Math.floor(Math.random() * 150 + 100); 
+            if(p.name !== userName && Math.random() > 0.3) p.score += 20 + Math.floor(Math.random() * 15); 
         });
         updateLeaderboard();
         setTimeout(() => { if(!hasShownSummary) showRoundSummary(); }, 2000);
     }
 }
 
-// EĞER HERKES CEVAPLADIYSA SUNUCUDAN GELEN BİLDİRİM
 socket.on('all_answered', () => {
     if(!hasShownSummary) {
-        // İnsanlar doğru cevabın ne olduğunu görsün diye 1 saniye bekletip tabloya at
         setTimeout(() => { if(!hasShownSummary) showRoundSummary(); }, 1000);
     }
 });
 
-// ARA PUAN TABLOSU (ÜSTÜNDEKİ KİŞİYLE FARK HESAPLANIR)
 function showRoundSummary() {
     if(hasShownSummary) return;
     hasShownSummary = true;
@@ -234,7 +220,6 @@ function showRoundSummary() {
     
     document.getElementById('arena').style.display = 'none';
     
-    // Sıralamayı yap
     players.sort((a, b) => b.score - a.score);
     const leader = players[0];
     
@@ -253,7 +238,6 @@ function showRoundSummary() {
         gapEl.innerText = "ZİRVEDESİN! KORU BU YERİ!";
         gapEl.style.color = "var(--neon)";
     } else {
-        // BİR ÜSTTEKİ RAKİP İLE PUAN FARKINI BULMA
         const playerAbove = players[myRank - 2]; 
         const gap = playerAbove.score - me.score;
         gapEl.innerText = `BİR ÜST SIRADAN (${playerAbove.name}) ${gap} PUAN GERİDESİN!`;
@@ -265,7 +249,6 @@ function showRoundSummary() {
     const rsScreen = document.getElementById('round-leaderboard');
     rsScreen.style.display = 'block';
     
-    // 4 Saniye Tabloyu Gösterip Yeni Soruya Geç
     setTimeout(() => {
         rsScreen.style.display = 'none';
         currentQ++;
@@ -304,6 +287,15 @@ function endBattle() {
     document.getElementById('end-screen').style.display = 'block';
     document.getElementById('final-score').innerText = myScore;
     
+    // FİNAL LİDERLİK TABLOSUNU HTML İÇİNE BASIYORUZ
+    const finalLb = document.getElementById('final-leaderboard');
+    players.sort((a, b) => b.score - a.score);
+    finalLb.innerHTML = players.map((p, i) => `
+        <div class="lb-item ${p.name === userName ? 'me' : ''}">
+            <span>${i+1}. ${p.icon || '🤖'} ${p.name}</span>
+            <span>${p.score} P</span>
+        </div>`).join('');
+        
     const best = parseInt(localStorage.getItem('quiz_best') || '0');
     if(myScore > best) localStorage.setItem('quiz_best', myScore);
 }

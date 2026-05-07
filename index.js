@@ -36,16 +36,14 @@ function broadcastRoomUpdate(roomName) {
     io.to(roomName).emit('update_player_list', { users, canStart: allReady });
 }
 
-// Odadaki herkesin cevaplayıp cevaplamadığını kontrol eden fonksiyon
 function checkAllAnswered(roomName) {
     const clients = io.sockets.adapter.rooms.get(roomName);
     if(!clients) return;
     let allAnswered = true;
     clients.forEach(id => {
         const s = io.sockets.sockets.get(id);
-        if(s && !s.hasAnswered) allAnswered = false; // Biri bile cevaplamadıysa false döner
+        if(s && !s.hasAnswered) allAnswered = false; 
     });
-    // Eğer herkes cevapladıysa odaya "Herkes Cevapladı" sinyali gönder, beklemeyi bitir.
     if(allAnswered && clients.size > 0) {
         io.to(roomName).emit('all_answered');
     }
@@ -61,7 +59,7 @@ io.on('connection', (socket) => {
         socket.username = data.username;
         socket.userIcon = data.userIcon || "👤";
         socket.isReady = false; 
-        socket.hasAnswered = false; // Yeni giren oyuncunun cevap durumu
+        socket.hasAnswered = false; 
         socket.currentRoom = data.roomName;
 
         if(data.roomName === 'f1' && typeof f1Logic !== 'undefined') {
@@ -84,12 +82,10 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Yeni soruya geçildiğinde cevap durumlarını sıfırla
     socket.on('question_loaded', () => {
         socket.hasAnswered = false;
     });
 
-    // Oyuncu bir şıkka tıkladığında
     socket.on('player_answered', () => {
         socket.hasAnswered = true;
         checkAllAnswered(socket.currentRoom);
@@ -111,7 +107,7 @@ io.on('connection', (socket) => {
         if(r) {
             setTimeout(() => { 
                 broadcastRoomUpdate(r); 
-                checkAllAnswered(r); // Çıkan kişi yüzünden sistem tıkanmasın diye tekrar kontrol et
+                checkAllAnswered(r); 
             }, 200);
         }
     });

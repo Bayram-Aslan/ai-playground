@@ -75,7 +75,7 @@
 
         <div id="countdown-screen" class="box-screen" style="display:none;">
             <h2 style="font-family:'Orbitron';">HAZIRLANIN...</h2>
-            <div id="big-countdown" style="font-size:6rem; color:var(--neon); font-family:'Orbitron';">3</div>
+            <div id="big-countdown" style="font-size:6rem; color:var(--neon); font-family:'Orbitron'; margin: 20px 0; text-shadow: 0 0 20px var(--neon);">3</div>
         </div>
 
         <div id="round-leaderboard" class="box-screen" style="display:none;">
@@ -100,9 +100,15 @@
             </div>
         </div>
 
-        <div id="end-screen" class="box-screen" style="display:none;">
+        <div id="end-screen" class="box-screen" style="display:none; max-width: 600px;">
             <h1 style="font-family:'Orbitron'; color:var(--neon);">GÖREV TAMAMLANDI</h1>
             <div style="font-size:2rem; margin:20px 0; font-family: 'Orbitron';">SKOR: <span id="final-score">0</span></div>
+            
+            <div class="leaderboard" style="margin-bottom: 25px; text-align: left;">
+                <div style="font-family:'Orbitron'; font-size:0.8rem; color:var(--neon); margin-bottom:15px; text-align:center;">KESİN SONUÇLAR (TÜM OPERATÖRLER)</div>
+                <div id="final-leaderboard"></div> 
+            </div>
+
             <button class="ready-btn" onclick="location.reload()">YENİDEN BAŞLAT</button>
         </div>
     </div>
