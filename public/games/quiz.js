@@ -9,71 +9,68 @@ const bigQuestionPool = {
         {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2}
     ],
     spor: [{q: "Fenerbahçe kaç yılında kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
-    tarih: [{q: "İstanbul'un fethi?", a: ["1071", "1453", "1299", "1923"], c: 1}],
-    genel: [{q: "En yüksek dağ hangisidir?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
-    bilim: [{q: "H2O formülü neyi temsil eder?", a: ["Su", "Tuz", "Oksijen", "Helyum"], c: 0}],
-    edebiyat: [{q: "Sinekli Bakkal yazarı?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
-    film: [{q: "Interstellar yönetmeni kimdir?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
+    tarih: [{q: "İstanbul kaç yılında fethedildi?", a: ["1071", "1299", "1453", "1923"], c: 2}],
+    genel: [{q: "Dünyanın en yüksek dağı?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
+    bilim: [{q: "Suyun kimyasal formülü nedir?", a: ["H2O", "CO2", "O2", "N2"], c: 0}],
+    edebiyat: [{q: "Sinekli Bakkal kimin eseridir?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
+    film: [{q: "Inception yönetmeni kimdir?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
 };
 
-let currentQuestionSet = [];
-let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
-let isMultiplayer = false, amIReady = false, canStartServer = false;
-let players = [], selectedCategoryName = "elektrik";
+let currentQuestionSet = [], currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
+let amIReady = false, canStartServer = false, selectedCategoryName = "elektrik", players = [];
 
 function joinMultiplayer() {
     const room = document.getElementById('room-input').value.toUpperCase();
-    if(room.length < 3) return alert("Hatalı Oda Kodu!");
-    isMultiplayer = true;
+    if(room.length < 3) return alert("Hatalı Kod!");
     socket.emit('join_room', { roomName: room, username: userName, userIcon: userIcon });
     document.getElementById('init-screen').style.display = 'none';
     document.getElementById('lobby').style.display = 'block';
-    showCategorySelection();
+    renderCategories();
 }
 
-function showCategorySelection() {
-    let catArea = document.getElementById('category-area');
-    if(!catArea) {
-        catArea = document.createElement('div');
-        catArea.id = 'category-area';
-        catArea.style = "margin: 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;";
-        document.getElementById('lobby').insertBefore(catArea, document.getElementById('start-trigger'));
+function renderCategories() {
+    let area = document.getElementById('category-area');
+    if(!area) {
+        area = document.createElement('div');
+        area.id = 'category-area';
+        area.className = "category-grid"; // CSS'deki grid yapısına uygun
+        area.style = "margin:20px 0; display:grid; grid-template-columns:1fr 1fr; gap:10px;";
+        document.getElementById('lobby').insertBefore(area, document.getElementById('start-trigger'));
     }
-    catArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
-        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem; border:1px solid #333;">
+    area.innerHTML = Object.keys(bigQuestionPool).map(c => `
+        <button onclick="setCat('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem;">
             ${c.toUpperCase()}
         </button>`).join('');
-    setCategory(selectedCategoryName);
+    setCat(selectedCategoryName);
 }
 
-function setCategory(c) {
+function setCat(c) {
     selectedCategoryName = c;
-    document.querySelectorAll('#category-area button').forEach(b => b.style.borderColor = "#333");
+    document.querySelectorAll('#category-area button').forEach(b => b.style.borderColor = "rgba(255,255,255,0.1)");
     if(document.getElementById(`btn-${c}`)) document.getElementById(`btn-${c}`).style.borderColor = "var(--neon)";
 }
 
-// KRİTİK: BUTON TETİKLEYİCİ
 function triggerAction() {
-    const btn = document.getElementById('start-trigger');
     if(!amIReady) {
         amIReady = true;
-        socket.emit('player_ready'); // Sunucuya bildir
-        btn.innerText = "SİNYAL GÖNDERİLDİ...";
-        btn.style.background = "#111";
-        btn.style.color = "#444";
+        socket.emit('player_ready');
     } else if(canStartServer) {
         socket.emit('admin_start_game', { category: selectedCategoryName });
     }
 }
 
 socket.on('update_player_list', (data) => {
-    document.getElementById('lobby-title').innerText = `ARENA: ${data.users.length} OPERATÖR`;
     canStartServer = data.canStart;
+    let listArea = document.getElementById('player-list-area');
+    if(!listArea) {
+        listArea = document.createElement('div');
+        listArea.id = 'player-list-area';
+        listArea.style = "margin:20px 0; display:flex; flex-wrap:wrap; gap:10px; justify-content:center;";
+        document.getElementById('lobby').insertBefore(listArea, document.getElementById('category-area'));
+    }
 
-    let listArea = document.getElementById('player-list-area') || createListArea();
     listArea.innerHTML = data.users.map(u => `
-        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; 
-                    border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
+        <div class="player-badge" style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
             ${u.ready ? '✅' : '⏳'} ${u.icon} ${u.name}
         </div>`).join('');
 
@@ -86,51 +83,36 @@ socket.on('update_player_list', (data) => {
         btn.innerText = "OPERASYONU BAŞLAT";
         btn.style.background = "var(--neon)";
         btn.style.color = "black";
-        btn.style.boxShadow = "0 0 15px var(--neon)";
+        btn.style.boxShadow = "0 0 20px var(--neon)";
     } else {
         btn.innerText = "DİĞERLERİ BEKLENİYOR...";
         btn.style.background = "#222";
         btn.style.color = "#666";
-        btn.style.boxShadow = "none";
     }
 });
 
-function createListArea() {
-    const la = document.createElement('div');
-    la.id = 'player-list-area';
-    la.style = "margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;";
-    document.getElementById('lobby').insertBefore(la, document.getElementById('category-area'));
-    return la;
-}
-
 socket.on('game_started_by_admin', (data) => {
     currentQuestionSet = bigQuestionPool[data.category];
-    startCountdown();
-});
-
-function startCountdown() {
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('arena').style.display = 'grid';
-    let cd = 3;
-    let interval = setInterval(() => {
-        document.getElementById('q-text').innerText = `BAŞLIYOR: ${cd}`;
-        cd--;
-        if(cd < 0) { clearInterval(interval); loadQuestion(); }
-    }, 1000);
-}
+    loadQ();
+});
 
-function loadQuestion() {
+function loadQ() {
     if(currentQ >= currentQuestionSet.length) return endBattle();
-    timeLeft = 10; updateLeaderboard();
+    timeLeft = 10;
     const qData = currentQuestionSet[currentQ];
     document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / ${currentQuestionSet.length}`;
     document.getElementById('q-text').innerText = qData.q;
-    document.getElementById('options').innerHTML = '';
-    qData.a.forEach((opt, i) => {
+    document.getElementById('feedback-box').innerHTML = "";
+    
+    const opt = document.getElementById('options');
+    opt.innerHTML = '';
+    qData.a.forEach((s, i) => {
         const b = document.createElement('button');
-        b.className = 'opt-btn'; b.innerText = opt;
+        b.className = 'opt-btn'; b.innerText = s;
         b.onclick = () => checkAnswer(i);
-        document.getElementById('options').appendChild(b);
+        opt.appendChild(b);
     });
     startTimer();
 }
@@ -139,20 +121,25 @@ function startTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft -= 0.1;
-        if(document.getElementById('timer-bar')) document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
+        document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
         if(timeLeft <= 0) { clearInterval(timer); checkAnswer(-1); }
     }, 100);
 }
 
 function checkAnswer(idx) {
     clearInterval(timer);
-    if(idx === currentQuestionSet[currentQ].c) {
-        myScore += Math.ceil(100 + (timeLeft * 10));
+    const correctIdx = currentQuestionSet[currentQ].c;
+    if(idx === correctIdx) {
+        let gain = Math.ceil(100 + (timeLeft * 10));
+        myScore += gain;
         correctCount++;
-        confetti({ particleCount: 50, spread: 60 });
+        confetti({ particleCount: 100, spread: 70 });
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>SİSTEM DOĞRULANDI! +${gain}</span>`;
+    } else {
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>VERİ KAYBI!</span>`;
     }
     socket.emit('submit_score', { username: userName, score: myScore });
-    setTimeout(() => { currentQ++; loadQuestion(); }, 1500);
+    setTimeout(() => { currentQ++; loadQ(); }, 2000);
 }
 
 function updateLeaderboard() {
@@ -168,7 +155,7 @@ function updateLeaderboard() {
 }
 
 socket.on('update_room_leaderboard', (data) => {
-    let p = players.find(player => player.name === data.username);
+    let p = players.find(x => x.name === data.username);
     if(p) p.score = data.score; else players.push({name: data.username, score: data.score, icon: "👤"});
     updateLeaderboard();
 });
@@ -177,4 +164,5 @@ function endBattle() {
     document.getElementById('arena').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
     document.getElementById('final-score').innerText = myScore;
+    document.getElementById('final-correct').innerText = correctCount;
 }
