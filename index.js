@@ -37,6 +37,8 @@ function updateRoomState(roomName) {
     if(!roomName) return;
     const users = getRoomUsers(roomName);
     const allReady = users.length > 0 && users.every(u => u.ready);
+    
+    // Odadaki HERKESE güncel listeyi ve başlatma yetkisini yayınla
     io.to(roomName).emit('update_player_list', { 
         users: users,
         count: users.length,
@@ -53,7 +55,7 @@ io.on('connection', (socket) => {
         socket.join(data.roomName);
         socket.username = data.username;
         socket.userIcon = data.userIcon;
-        socket.isReady = false;
+        socket.isReady = false; 
         socket.currentRoom = data.roomName;
         updateRoomState(data.roomName);
     });
@@ -64,8 +66,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('admin_start_game', (data) => {
-        const users = getRoomUsers(socket.currentRoom);
-        if(users.every(u => u.ready)) {
+        if(socket.currentRoom) {
             io.to(socket.currentRoom).emit('game_started_by_admin', { category: data.category });
         }
     });
@@ -83,9 +84,9 @@ io.on('connection', (socket) => {
         const r = socket.currentRoom;
         systemState.totalOperators = Math.max(0, systemState.totalOperators - 1);
         io.emit('total_count', systemState.totalOperators);
-        setTimeout(() => { updateRoomState(r); }, 100);
+        setTimeout(() => { if(r) updateRoomState(r); }, 100);
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => { console.log(`ARENA SERVER RUNNING ON ${PORT}`); });
+server.listen(PORT, () => { console.log(`ARENA SERVER: ${PORT}`); });

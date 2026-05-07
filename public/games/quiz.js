@@ -18,7 +18,7 @@ const bigQuestionPool = {
 
 let currentQuestionSet = [];
 let currentQ = 0, myScore = 0, correctCount = 0, timer, timeLeft = 10;
-let isMultiplayer = false, amIReady = false, canServerStart = false;
+let isMultiplayer = false, amIReady = false, canStartServer = false;
 let players = [], selectedCategoryName = "elektrik";
 
 function joinMultiplayer() {
@@ -53,20 +53,23 @@ function setCategory(c) {
     if(document.getElementById(`btn-${c}`)) document.getElementById(`btn-${c}`).style.borderColor = "var(--neon)";
 }
 
-// BUTON TIKLAMA MANTIĞI
 function triggerAction() {
     if(!amIReady) {
         amIReady = true;
         socket.emit('player_ready');
-    } else if(canServerStart) {
+        // Butonu hemen geri bildirim için güncelle
+        const btn = document.getElementById('start-trigger');
+        btn.innerText = "BEKLENİYOR...";
+        btn.style.background = "#222";
+    } else if(canStartServer) {
         socket.emit('admin_start_game', { category: selectedCategoryName });
     }
 }
 
 socket.on('update_player_list', (data) => {
     document.getElementById('lobby-title').innerText = `ARENA: ${data.users.length} OPERATÖR`;
-    canServerStart = data.canStart; // Sunucudan gelen başlatılabilirlik durumu
-    
+    canStartServer = data.canStart;
+
     let listArea = document.getElementById('player-list-area') || createListArea();
     listArea.innerHTML = data.users.map(u => `
         <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
@@ -74,9 +77,6 @@ socket.on('update_player_list', (data) => {
         </div>`).join('');
 
     const btn = document.getElementById('start-trigger');
-    btn.disabled = false; // Buton her zaman tıklanabilir (Hazır vermek için)
-    btn.style.opacity = "1";
-
     if(!amIReady) {
         btn.innerText = "HAZIR OL";
         btn.style.background = "white";
@@ -85,12 +85,10 @@ socket.on('update_player_list', (data) => {
         btn.innerText = "OPERASYONU BAŞLAT";
         btn.style.background = "var(--neon)";
         btn.style.color = "black";
-        btn.style.boxShadow = "0 0 20px var(--neon)";
     } else {
         btn.innerText = "DİĞERLERİ BEKLENİYOR...";
         btn.style.background = "#222";
         btn.style.color = "#666";
-        btn.style.boxShadow = "none";
     }
 });
 
@@ -138,7 +136,7 @@ function startTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft -= 0.1;
-        document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
+        if(document.getElementById('timer-bar')) document.getElementById('timer-bar').style.width = (timeLeft * 10) + "%";
         if(timeLeft <= 0) { clearInterval(timer); checkAnswer(-1); }
     }, 100);
 }
