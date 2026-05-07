@@ -36,6 +36,21 @@ function broadcastRoomUpdate(roomName) {
     io.to(roomName).emit('update_player_list', { users, canStart: allReady });
 }
 
+// Odadaki herkesin cevaplayıp cevaplamadığını kontrol eden fonksiyon
+function checkAllAnswered(roomName) {
+    const clients = io.sockets.adapter.rooms.get(roomName);
+    if(!clients) return;
+    let allAnswered = true;
+    clients.forEach(id => {
+        const s = io.sockets.sockets.get(id);
+        if(s && !s.hasAnswered) allAnswered = false; // Biri bile cevaplamadıysa false döner
+    });
+    // Eğer herkes cevapladıysa odaya "Herkes Cevapladı" sinyali gönder, beklemeyi bitir.
+    if(allAnswered && clients.size > 0) {
+        io.to(roomName).emit('all_answered');
+    }
+}
+
 io.on('connection', (socket) => {
     gameStates.toplamKullanici++;
     io.emit('total_count', gameStates.toplamKullanici);
@@ -46,6 +61,7 @@ io.on('connection', (socket) => {
         socket.username = data.username;
         socket.userIcon = data.userIcon || "👤";
         socket.isReady = false; 
+        socket.hasAnswered = false; // Yeni giren oyuncunun cevap durumu
         socket.currentRoom = data.roomName;
 
         if(data.roomName === 'f1' && typeof f1Logic !== 'undefined') {
@@ -53,16 +69,9 @@ io.on('connection', (socket) => {
         } else {
             broadcastRoomUpdate(data.roomName);
         }
-        
-        setTimeout(() => {
-            const room = io.sockets.adapter.rooms.get(data.roomName);
-            io.to(data.roomName).emit('room_count', room ? room.size : 0);
-        }, 200);
     });
 
-    if(typeof f1Logic !== 'undefined') {
-        f1Logic.handle(io, socket, gameStates);
-    }
+    if(typeof f1Logic !== 'undefined') f1Logic.handle(io, socket, gameStates);
 
     socket.on('player_ready', () => {
         socket.isReady = true;
@@ -73,6 +82,17 @@ io.on('connection', (socket) => {
         if(socket.currentRoom) {
             io.to(socket.currentRoom).emit('game_started_by_admin', { category: data.category });
         }
+    });
+
+    // Yeni soruya geçildiğinde cevap durumlarını sıfırla
+    socket.on('question_loaded', () => {
+        socket.hasAnswered = false;
+    });
+
+    // Oyuncu bir şıkka tıkladığında
+    socket.on('player_answered', () => {
+        socket.hasAnswered = true;
+        checkAllAnswered(socket.currentRoom);
     });
 
     socket.on('submit_score', (data) => {
@@ -88,7 +108,12 @@ io.on('connection', (socket) => {
         gameStates.toplamKullanici--;
         io.emit('total_count', gameStates.toplamKullanici);
         const r = socket.currentRoom;
-        setTimeout(() => { if(r) broadcastRoomUpdate(r); }, 200);
+        if(r) {
+            setTimeout(() => { 
+                broadcastRoomUpdate(r); 
+                checkAllAnswered(r); // Çıkan kişi yüzünden sistem tıkanmasın diye tekrar kontrol et
+            }, 200);
+        }
     });
 });
 
