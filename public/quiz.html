@@ -10,9 +10,9 @@
     <style>
         :root { 
             --neon: #00ff88; 
-            --bg-dark: #0a0a0f; 
+            --bg-dark: #050508; 
             --danger: #ff0055;
-            --panel-glass: rgba(20, 20, 30, 0.7);
+            --panel-glass: rgba(15, 15, 20, 0.85);
         }
         
         body { 
@@ -26,161 +26,131 @@
             overflow-x: hidden; 
         }
 
-        /* YARIŞMA STÜDYOSU ARKA PLAN EFEKTLERİ */
+        /* DİNAMİK ARKA PLAN */
         .grid-bg { 
             position: fixed; inset: 0; z-index: -2; 
             background: 
-                radial-gradient(circle at 15% 50%, rgba(188, 19, 254, 0.15), transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(0, 210, 255, 0.15), transparent 50%),
-                radial-gradient(circle at 50% 100%, rgba(0, 255, 136, 0.1), transparent 50%);
-            animation: pulseBg 8s infinite alternate ease-in-out;
+                radial-gradient(circle at 10% 40%, rgba(188, 19, 254, 0.15), transparent 40%),
+                radial-gradient(circle at 90% 20%, rgba(0, 210, 255, 0.15), transparent 40%),
+                radial-gradient(circle at 50% 110%, rgba(255, 215, 0, 0.1), transparent 50%),
+                radial-gradient(circle at 50% -10%, rgba(0, 255, 136, 0.1), transparent 50%);
+            animation: pulseBg 10s infinite alternate ease-in-out;
         }
         @keyframes pulseBg {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.1); opacity: 1; }
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.05); opacity: 1; }
         }
 
-        /* HAREKETLİ STÜDYO SPOT IŞIKLARI */
+        /* SPOT IŞIKLAR */
         .spotlight {
-            position: fixed; top: -10%; width: 20vw; height: 120vh;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent);
+            position: fixed; top: -20%; width: 30vw; height: 140vh;
             transform-origin: top center; z-index: -1; pointer-events: none;
-            filter: blur(15px);
+            filter: blur(30px);
         }
-        .spot-1 { left: 15%; animation: swingSpot 12s infinite alternate ease-in-out; background: linear-gradient(to bottom, rgba(0, 210, 255, 0.1), transparent); }
-        .spot-2 { right: 15%; animation: swingSpot 10s infinite alternate-reverse ease-in-out; background: linear-gradient(to bottom, rgba(188, 19, 254, 0.1), transparent); }
+        .spot-1 { left: 10%; animation: swingSpot 15s infinite alternate ease-in-out; background: linear-gradient(to bottom, rgba(0, 210, 255, 0.1), transparent); }
+        .spot-2 { right: 10%; animation: swingSpot 12s infinite alternate-reverse ease-in-out; background: linear-gradient(to bottom, rgba(255, 0, 85, 0.1), transparent); }
         
         @keyframes swingSpot {
-            0% { transform: rotate(20deg); }
-            100% { transform: rotate(-20deg); }
+            0% { transform: rotate(15deg); }
+            100% { transform: rotate(-15deg); }
         }
 
-        /* ÜST NAVİGASYON (Glassmorphism) */
+        /* NAVİGASYON */
         .top-nav { 
-            width: 100%; height: 60px; 
-            background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(10px);
+            width: 100%; height: 65px; 
+            background: rgba(5, 5, 8, 0.9); backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255,255,255,0.05); 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 100; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 25px; box-sizing: border-box; z-index: 100; 
         }
-        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 3px; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0,255,136,0.5); }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 3px; font-size: 1.2rem; text-shadow: 0 0 10px rgba(0,255,136,0.4); }
         .exit-btn { 
-            background: rgba(255, 0, 85, 0.1); border: 1px solid var(--danger); color: var(--danger); 
-            padding: 8px 18px; border-radius: 8px; font-family: 'Orbitron'; font-size: 0.75rem; 
-            text-decoration: none; transition: 0.3s; box-shadow: 0 0 10px rgba(255,0,85,0.2);
+            background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+            padding: 8px 18px; border-radius: 8px; font-family: 'Orbitron'; font-size: 0.8rem; 
+            text-decoration: none; transition: 0.3s; font-weight: bold;
         }
-        .exit-btn:hover { background: var(--danger); color: white; box-shadow: 0 0 20px rgba(255,0,85,0.6); }
+        .exit-btn:hover { background: var(--danger); color: white; box-shadow: 0 0 15px rgba(255,0,85,0.6); }
 
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; box-sizing: border-box; }
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 20px; box-sizing: border-box; }
         
-        /* ANA PANELLER (Cam Görünümü - Glassmorphism) */
         .box-screen { 
-            text-align: center; background: var(--panel-glass); backdrop-filter: blur(20px);
-            padding: 35px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
-            border-top: 2px solid rgba(255,255,255,0.2);
-            width: 100%; max-width: 550px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02); 
+            text-align: center; background: var(--panel-glass); backdrop-filter: blur(25px);
+            padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); 
+            width: 100%; max-width: 600px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); 
         }
         
-        /* BAŞLA / KATIL BUTONU (Animasyonlu Gradient) */
         .ready-btn { 
-            background: linear-gradient(90deg, #00ff88, #00b3ff, #00ff88); background-size: 200% 100%;
-            animation: gradientMove 3s linear infinite; color: black; border: none; padding: 16px 0; 
-            width: 100%; font-size: 1.4rem; font-family: 'Orbitron'; font-weight: 900; 
+            background: rgba(0, 255, 136, 0.05); border: 2px solid var(--neon); color: var(--neon); 
+            padding: 16px 0; width: 100%; font-size: 1.3rem; font-family: 'Orbitron'; font-weight: 900; 
             border-radius: 12px; cursor: pointer; transition: 0.3s; margin-top: 15px;
-            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.4); text-transform: uppercase;
+            text-transform: uppercase; letter-spacing: 2px;
         }
-        .ready-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0, 255, 136, 0.6); }
-        .ready-btn:disabled { background: #333 !important; color: #777 !important; box-shadow: none !important; animation: none; cursor: not-allowed; }
-
-        @keyframes gradientMove {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
+        .ready-btn:hover { background: var(--neon); color: black; box-shadow: 0 0 25px rgba(0, 255, 136, 0.5); transform: translateY(-2px); }
 
         .room-input { 
-            background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.1); color: #fff; 
-            padding: 15px; width: 100%; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; 
-            font-family: 'Orbitron'; text-align: center; font-size: 1.3rem; letter-spacing: 5px; transition: 0.3s;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; 
+            padding: 16px; width: 100%; border-radius: 10px; margin-bottom: 20px; box-sizing: border-box; 
+            font-family: 'Orbitron'; text-align: center; font-size: 1.5rem; letter-spacing: 6px;
         }
-        .room-input:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
 
-        /* CIVIL CIVIL KATEGORİ BUTONLARI */
-        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        /* KATEGORİ SİSTEMİ */
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        
         .cat-btn { 
-            background: rgba(0,0,0,0.5); border: 2px solid #333; color: white; padding: 16px 10px; 
-            font-family: 'Orbitron', sans-serif; font-size: 0.85rem; border-radius: 12px; cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: 700;
-            display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 1px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid rgba(255,255,255,0.1);
+            color: white; 
+            padding: 40px 15px; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 1.1rem; 
+            border-radius: 14px; 
+            cursor: pointer; 
+            transition: 0.3s all; 
+            font-weight: 900;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            text-shadow: 0 3px 10px rgba(0,0,0,1);
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.4);
         }
-        .cat-btn:hover { transform: translateY(-4px) scale(1.03); }
 
-        .cat-bilim { border-color: #00d2ff; color: #00d2ff; }
-        .cat-bilim:hover, .cat-bilim.active { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.4); border-color: transparent; }
+        .cat-btn:hover { transform: translateY(-5px) scale(1.03); border-color: var(--neon); }
 
-        .cat-edebiyat { border-color: #bc13fe; color: #bc13fe; }
-        .cat-edebiyat:hover, .cat-edebiyat.active { background: linear-gradient(135deg, #8a2be2, #bc13fe); color: white; box-shadow: 0 8px 20px rgba(188, 19, 254, 0.4); border-color: transparent; }
+        /* GÖRSEL KAYNAKLARI (GÜNCELLENDİ) */
+        .cat-bilim { background-image: url('https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=600&auto=format&fit=crop'); }
+        .cat-edebiyat { background-image: url('https://images.unsplash.com/photo-1456953180671-730de08edaa7?q=80&w=600&auto=format&fit=crop'); }
+        
+        /* ELEKTRİK: TESLA VE EDISON KARŞILIKLI */
+        .cat-elektrik { background-image: url('https://images.unsplash.com/photo-1555664424-778a1e5e1b48?q=80&w=600&auto=format&fit=crop'); }
+        
+        /* GENEL KÜLTÜR: MUAZZAM DÜNYA */
+        .cat-genelkultur { background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop'); }
+        
+        .cat-sinema { background-image: url('https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&auto=format&fit=crop'); }
+        .cat-spor { background-image: url('https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=600&auto=format&fit=crop'); }
+        .cat-tarih { background-image: url('https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=600&auto=format&fit=crop'); }
 
-        .cat-elektrik { border-color: #ffd700; color: #ffd700; }
-        .cat-elektrik:hover, .cat-elektrik.active { background: linear-gradient(135deg, #ff8c00, #ffd700); color: black; box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4); border-color: transparent; }
-
-        .cat-genelkultur { border-color: #ff5722; color: #ff5722; }
-        .cat-genelkultur:hover, .cat-genelkultur.active { background: linear-gradient(135deg, #e64a19, #ff5722); color: white; box-shadow: 0 8px 20px rgba(255, 87, 34, 0.4); border-color: transparent; }
-
-        .cat-sinema { border-color: #ff0055; color: #ff0055; }
-        .cat-sinema:hover, .cat-sinema.active { background: linear-gradient(135deg, #c51162, #ff0055); color: white; box-shadow: 0 8px 20px rgba(255, 0, 85, 0.4); border-color: transparent; }
-
-        .cat-spor { border-color: #00ff88; color: #00ff88; }
-        .cat-spor:hover, .cat-spor.active { background: linear-gradient(135deg, #00b300, #00ff88); color: black; box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4); border-color: transparent; }
-
-        .cat-tarih { border-color: #d2691e; color: #d2691e; }
-        .cat-tarih:hover, .cat-tarih.active { background: linear-gradient(135deg, #8b4513, #d2691e); color: white; box-shadow: 0 8px 20px rgba(210, 105, 30, 0.4); border-color: transparent; }
-
-        /* OYUN ARENASI (Stüdyo Ekranı Görünümü) */
+        /* OYUN İÇİ PANEL */
         #arena { width: 100%; max-width: 1200px; display: none; grid-template-columns: 1fr 320px; gap: 25px; }
-        
-        .question-zone { 
-            background: linear-gradient(145deg, rgba(30,30,40,0.9), rgba(15,15,20,0.9)); 
-            padding: 40px 30px; border-radius: 20px; border: 1px solid rgba(0, 255, 136, 0.3); 
-            text-align: center; position: relative; overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,255,136,0.05);
-        }
-        #timer-bar { position: absolute; top: 0; left: 0; height: 8px; background: linear-gradient(90deg, #ff0055, #ffd700, #00ff88); width: 100%; transition: width 0.1s linear; }
-        
-        #q-text { font-size: 1.8rem; margin: 30px 0; min-height: 80px; line-height: 1.4; text-shadow: 0 2px 10px rgba(255,255,255,0.3); font-weight: 700; }
-        
+        .question-zone { background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(20px); padding: 40px 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        #timer-bar { position: absolute; top: 0; left: 0; height: 8px; background: var(--neon); width: 100%; transition: width 0.1s linear; }
+        #q-text { font-size: 1.8rem; margin: 30px 0; min-height: 80px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .opt { 
-            background: linear-gradient(145deg, rgba(20,20,25,0.9), rgba(10,10,15,0.9)); 
-            border: 2px solid rgba(255,255,255,0.1); color: white; padding: 20px; font-size: 1.2rem; 
-            border-radius: 12px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 700; 
-            transition: all 0.2s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .opt:hover:not(:disabled) { border-color: var(--neon); box-shadow: 0 5px 25px rgba(0,255,136,0.3); transform: translateY(-3px); }
-        .opt:disabled { cursor: not-allowed; }
+        .opt { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 20px; font-size: 1.2rem; border-radius: 12px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 700; transition: 0.2s; }
+        .opt:hover:not(:disabled) { border-color: var(--neon); background: rgba(0,255,136,0.05); }
         
-        .leaderboard { background: var(--panel-glass); backdrop-filter: blur(15px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .lb-title { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--neon); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px; letter-spacing: 2px; }
-        .lb-item { display: flex; justify-content: space-between; padding: 12px; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Orbitron'; align-items: center; }
-        .lb-item.me { background: linear-gradient(90deg, rgba(0,255,136,0.15), transparent); color: var(--neon); border-radius: 8px; border-left: 3px solid var(--neon); }
+        .leaderboard { background: var(--panel-glass); backdrop-filter: blur(20px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .lb-title { font-family: 'Orbitron'; font-size: 1rem; color: var(--neon); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px; }
+        .lb-item { display: flex; justify-content: space-between; padding: 12px; font-size: 0.9rem; font-family: 'Orbitron'; }
+        .lb-item.me { background: linear-gradient(90deg, rgba(0,255,136,0.15), transparent); color: var(--neon); border-radius: 8px; border-left: 3px solid var(--neon); font-weight: bold; }
         
-        #feedback-box { margin-top: 25px; font-family: 'Orbitron'; font-size: 1.1rem; min-height: 50px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        #feedback-box { margin-top: 25px; font-family: 'Orbitron'; font-size: 1.1rem; min-height: 50px; }
 
-        /* MOBİL UYUM */
         @media (max-width: 768px) {
-            #arena { grid-template-columns: 1fr; gap: 15px; }
-            .category-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .cat-btn { padding: 14px 5px; font-size: 0.75rem; letter-spacing: 0px; }
-            .box-screen { padding: 25px 20px; border-radius: 15px; }
-            h2 { font-size: 1.6rem !important; }
-            .room-input { font-size: 1.2rem; padding: 12px; letter-spacing: 3px; }
-            .ready-btn { font-size: 1.2rem; padding: 15px 0; }
-            .question-zone { padding: 20px 15px; }
-            #q-text { font-size: 1.3rem; margin: 20px 0; min-height: 60px; line-height: 1.3; }
-            .options-grid { grid-template-columns: 1fr; gap: 10px; }
-            .opt { padding: 16px; font-size: 1.1rem; }
-            .leaderboard { padding: 20px; order: 2; }
-            .top-nav { height: 55px; padding: 0 15px; }
-            .nav-logo { font-size: 0.9rem; letter-spacing: 1px; }
+            #arena { grid-template-columns: 1fr; }
+            .category-grid { grid-template-columns: 1fr 1fr; }
+            .cat-btn { padding: 30px 5px; font-size: 0.9rem; }
+            #q-text { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -196,44 +166,36 @@
 
     <div class="main-content">
         <div id="init-screen" class="box-screen">
-            <h2 style="font-family:'Orbitron'; color:var(--neon); margin-bottom:25px; text-shadow: 0 0 15px rgba(0,255,136,0.3);">OPERASYON MERKEZİ</h2>
-            
-            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron';">BİREYSEL ARENA (BOTLARA KARŞI)</p>
+            <h2 style="font-family:'Orbitron'; color:var(--neon); margin-bottom:25px;">OPERASYON MERKEZİ</h2>
+            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron'; text-transform: uppercase;">BİREYSEL ARENA (BOTLARA KARŞI)</p>
             <div id="single-category-area" class="category-grid"></div>
-            
-            <div style="border-top:1px solid rgba(255,255,255,0.1); margin:25px 0;"></div>
-            
-            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron';">ÇOKLU OYUNCU (SINIF ARENASI)</p>
+            <div style="border-top:1px solid rgba(255,255,255,0.05); margin:25px 0;"></div>
+            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron'; text-transform: uppercase;">ÇOKLU OYUNCU (SINIF ARENASI)</p>
             <input type="text" id="room-input" class="room-input" placeholder="ODA KODU GİRİN" maxlength="10">
             <button class="ready-btn" onclick="joinMultiplayer()">ODAYA KATIL</button>
         </div>
 
         <div id="lobby" class="box-screen" style="display:none;">
-            <div class="user-count" style="font-family:'Orbitron'; color:var(--neon); font-size:1.1rem; margin-bottom:20px;">ARENA: <span id="count">1</span> OPERATÖR BAĞLI</div>
-            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron';">KATEGORİ SEÇİMİ (YÖNETİCİ)</p>
-            <div id="multi-category-area" class="category-grid"></div>
-            <p style="text-align:left; font-size:0.85rem; color:#aaa; margin-bottom:10px; font-family:'Orbitron';">OPERATÖR DURUMU</p>
-            <div id="player-list-area" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:25px;"></div>
+            <div class="user-count" style="font-family:'Orbitron'; color:var(--neon); font-size:1.1rem;">ARENA: <span id="count">1</span> OPERATÖR</div>
+            <div id="multi-category-area" class="category-grid" style="margin-top:20px;"></div>
+            <div id="player-list-area" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:20px 0;"></div>
             <button id="start-trigger" class="ready-btn" onclick="triggerAction()">HAZIR OL</button>
         </div>
 
         <div id="countdown-screen" class="box-screen" style="display:none;">
-            <h2 style="font-family:'Orbitron'; letter-spacing:3px; color:#fff;">SAHNE HAZIRLANIYOR...</h2>
-            <div id="big-countdown" style="font-size:7rem; color:var(--neon); font-family:'Orbitron'; margin: 20px 0; text-shadow: 0 0 30px var(--neon);">3</div>
+            <div id="big-countdown" style="font-size:7rem; color:var(--neon); font-family:'Orbitron'; text-shadow: 0 0 30px var(--neon);">3</div>
         </div>
 
         <div id="round-leaderboard" class="box-screen" style="display:none;">
-            <h2 style="font-family:'Orbitron'; font-size:1.3rem; color:#fff; letter-spacing: 2px;">GÜNCEL DURUM</h2>
-            <div id="round-rank" style="font-size:5rem; color:var(--neon); font-family:'Orbitron'; margin: 15px 0; text-shadow: 0 0 20px rgba(0,255,136,0.4);">#1</div>
-            <div id="round-gap" style="font-size:1.3rem; font-weight:700; background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:inline-block;">ZİRVEDESİN!</div>
-            <div style="border-top:1px solid rgba(255,255,255,0.1); margin:25px 0;"></div>
-            <div id="round-leader-name" style="font-size:1rem; color:#aaa; font-family:'Orbitron';">LİDER: 🤖 OPERATÖR</div>
+            <div id="round-rank" style="font-size:5rem; color:var(--neon); font-family:'Orbitron';">#1</div>
+            <div id="round-gap" style="font-size:1.3rem; font-weight:700;">ZİRVEDESİN!</div>
+            <div id="round-leader-name" style="font-size:1rem; color:#aaa; margin-top:15px;"></div>
         </div>
 
         <div id="arena">
             <div class="question-zone">
                 <div id="timer-bar"></div>
-                <div id="q-number" style="font-family:'Orbitron'; font-size:0.85rem; color:#888; margin-bottom:15px; letter-spacing:2px;">MISSION: 1/10</div>
+                <div id="q-number" style="font-family:'Orbitron'; font-size:0.85rem; color:#888; margin-bottom:15px;">MISSION: 1/10</div>
                 <h2 id="q-text">Veri Bekleniyor...</h2>
                 <div id="options" class="options-grid"></div>
                 <div id="feedback-box"></div>
@@ -245,14 +207,9 @@
         </div>
 
         <div id="end-screen" class="box-screen" style="display:none; max-width: 650px;">
-            <h1 style="font-family:'Orbitron'; font-size:2.5rem; color:var(--neon); text-shadow: 0 0 20px rgba(0,255,136,0.5); margin-bottom:10px;">GÖREV TAMAMLANDI</h1>
-            <div style="font-size:1.8rem; margin:25px 0; font-family: 'Orbitron'; background:rgba(0,0,0,0.5); padding:15px; border-radius:15px; border:1px solid rgba(255,255,255,0.1);">SKOR: <span id="final-score" style="color:var(--neon);">0</span></div>
-            
-            <div class="leaderboard" style="margin-bottom: 30px; text-align: left; background: rgba(0,0,0,0.3);">
-                <div class="lb-title">KESİN SONUÇLAR</div>
-                <div id="final-leaderboard"></div> 
-            </div>
-
+            <h1 style="font-family:'Orbitron'; font-size:2.5rem; color:var(--neon);">GÖREV TAMAMLANDI</h1>
+            <div style="font-size:1.8rem; margin:25px 0; font-family: 'Orbitron'; background:rgba(0,0,0,0.5); padding:15px; border-radius:15px;">SKOR: <span id="final-score">0</span></div>
+            <div id="final-leaderboard" class="leaderboard" style="margin-bottom:30px; background:rgba(0,0,0,0.3);"></div>
             <button class="ready-btn" onclick="location.reload()">YENİDEN BAŞLAT</button>
         </div>
     </div>
