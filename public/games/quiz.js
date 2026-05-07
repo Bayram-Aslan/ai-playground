@@ -67,7 +67,6 @@ function triggerAction() {
         amIReady = true;
         socket.emit('player_ready');
     } else if(canStartServer) {
-        // YÖNETİCİ SORULARI ÇEKER VE SUNUCUYA İLETİR
         const selectedQs = getRandomQuestions(selectedCategoryName);
         socket.emit('admin_start_game', { category: selectedCategoryName, questions: selectedQs });
     }
@@ -89,7 +88,6 @@ socket.on('update_player_list', (data) => {
 });
 
 socket.on('game_started_by_admin', (data) => {
-    // ODADAKİ HERKES YÖNETİCİNİN ÇEKTİĞİ AYNI SORULARI ALIR
     currentQuestionSet = data.questions; 
     startCountdown();
 });
@@ -180,8 +178,8 @@ function checkAnswer(idx) {
         opts[idx].style.borderColor = 'var(--neon)';
         opts[idx].style.opacity = '1';
         
-        // YENİ PUANLAMA MANTIĞI: 20 PUAN + KALAN SANİYE
-        let gain = 20 + Math.floor(timeLeft); 
+        // YENİ PUANLAMA MANTIĞI: SADECE KALAN SANİYE (Maksimum 20)
+        let gain = Math.ceil(timeLeft); 
         myScore += gain; 
         confetti({ particleCount: 50, spread: 60 });
         document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>DOĞRU! +${gain} Puan</span>`;
@@ -200,8 +198,9 @@ function checkAnswer(idx) {
         socket.emit('player_answered'); 
         document.getElementById('feedback-box').innerHTML += `<br><span style="font-size:0.75rem; color:#888;">Diğer operatörler bekleniyor...</span>`;
     } else {
+        // Botların yeni sisteme göre (Max 20 üzerinden) puan kazanması
         players.forEach(p => { 
-            if(p.name !== userName && Math.random() > 0.3) p.score += 20 + Math.floor(Math.random() * 15); 
+            if(p.name !== userName && Math.random() > 0.3) p.score += Math.ceil(Math.random() * 20); 
         });
         updateLeaderboard();
         setTimeout(() => { if(!hasShownSummary) showRoundSummary(); }, 2000);
@@ -241,8 +240,15 @@ function showRoundSummary() {
     } else {
         const playerAbove = players[myRank - 2]; 
         const gap = playerAbove.score - me.score;
-        gapEl.innerText = `BİR ÜST SIRADAN (${playerAbove.name}) ${gap} PUAN GERİDESİN!`;
-        gapEl.style.color = "var(--danger)";
+        
+        // YENİ EŞİTLİK (BERABERLİK) MANTIĞI
+        if (gap === 0) {
+            gapEl.innerText = `BİR ÜST SIRADAKİ (${playerAbove.name}) İLE AYNI PUANDASIN!`;
+            gapEl.style.color = "#ffd700"; // Sarı uyarı rengi
+        } else {
+            gapEl.innerText = `BİR ÜST SIRADAN (${playerAbove.name}) ${gap} PUAN GERİDESİN!`;
+            gapEl.style.color = "var(--danger)"; // Kırmızı uyarı rengi
+        }
     }
     
     document.getElementById('round-leader-name').innerText = `GENEL LİDER: ${leader.icon || '🤖'} ${leader.name}`;
