@@ -2,42 +2,124 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>QUIZ ARENA // MISSION</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTRO-BATTLE | ARENA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --neon: #00ff88; --bg: #050505; --panel: rgba(15,15,15,0.98); --danger: #ff1e1e; }
+        
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
+        
+        /* ÜST NAVİGASYON */
+        .top-nav {
+            width: 100%; height: 60px; background: rgba(0,0,0,0.9); border-bottom: 1px solid #222;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            box-sizing: border-box; z-index: 100;
+        }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); letter-spacing: 2px; font-size: 1rem; }
+        .exit-btn {
+            background: rgba(255, 30, 30, 0.1); border: 1px solid var(--danger); color: var(--danger);
+            padding: 8px 15px; border-radius: 5px; font-family: 'Orbitron'; font-size: 0.7rem;
+            text-decoration: none; transition: 0.3s;
+        }
+        .exit-btn:hover { background: var(--danger); color: white; }
+
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; box-sizing: border-box; }
+        .grid-bg { position: fixed; inset: 0; background-image: radial-gradient(circle at center, #111 0%, #000 100%); z-index: -1; }
+
+        /* KUTU EKRANLAR (GİRİŞ, LOBİ, BİTİŞ) */
+        .box-screen { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(0,255,136,0.05); }
+        .user-count { font-family: 'Orbitron'; color: var(--neon); font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
+        
+        .ready-btn { background: var(--neon); color: black; border: none; padding: 20px 0; width: 100%; font-size: 1.5rem; font-family: 'Orbitron'; font-weight: 900; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .ready-btn:disabled { background: #222 !important; color: #666 !important; cursor: not-allowed; box-shadow: none !important; }
+        
+        .room-input { background: #0a0a0a; border: 1px solid #333; color: var(--neon); padding: 15px; width: 100%; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; font-family: 'Orbitron'; text-align: center; font-size: 1.2rem; }
+        .room-input:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 10px rgba(0,255,136,0.2); }
+
+        .cat-btn { background: #0a0a0a; border: 1px solid #333; color: white; padding: 12px; font-family: 'Orbitron'; font-size: 0.8rem; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .cat-btn.active { border-color: var(--neon); color: var(--neon); background: rgba(0,255,136,0.1); }
+
+        /* ARENA */
+        #arena { width: 100%; max-width: 1100px; display: none; grid-template-columns: 1fr 320px; gap: 20px; }
+        .question-zone { background: var(--panel); padding: 30px; border-radius: 15px; border: 1px solid #222; text-align: center; position: relative; overflow: hidden; }
+        #timer-bar { position: absolute; top: 0; left: 0; height: 6px; background: var(--neon); width: 100%; transition: linear 0.1s; }
+        #q-text { font-size: 1.8rem; margin: 30px 0; min-height: 80px; line-height: 1.2; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt { background: #0a0a0a; border: 2px solid #222; color: white; padding: 20px; font-size: 1.2rem; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Rajdhani'; font-weight: 700; }
+        .opt:hover { border-color: var(--neon); background: rgba(0,255,136,0.05); }
+        
+        /* SIRALAMA */
+        .leaderboard { background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid #222; }
+        .lb-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; letter-spacing: 1px; }
+        .lb-item { display: flex; justify-content: space-between; padding: 12px 10px; font-size: 0.85rem; border-bottom: 1px solid #1a1a1a; font-family: 'Orbitron'; }
+        .lb-item.me { background: rgba(0,255,136,0.1); color: var(--neon); border-radius: 5px; border: 1px solid rgba(0,255,136,0.2); }
+        
+        #feedback-box { margin-top: 20px; font-family: 'Orbitron'; font-size: 1rem; min-height: 30px; }
+
+        /* MOBİL UYUM */
+        @media (max-width: 768px) {
+            #arena { grid-template-columns: 1fr; }
+            .leaderboard { order: 2; }
+            .question-zone { order: 1; padding: 20px; }
+            #q-text { font-size: 1.4rem; }
+            .options-grid { grid-template-columns: 1fr; }
+            .opt { padding: 15px; font-size: 1.1rem; }
+            .top-nav { padding: 0 10px; }
+            .nav-logo { font-size: 0.8rem; }
+        }
+    </style>
 </head>
-<body class="game-body">
-    <div id="init-screen" class="central-box">
-        <h2>OPERASYON BÖLGESİ</h2>
-        <input type="text" id="room-input" placeholder="ODA KODU (ÖR: AKU101)">
-        <button class="ready-btn" onclick="joinMultiplayer()">ÇOKLU OYUNCUYA BAĞLAN</button>
-    </div>
+<body>
+    <div class="grid-bg"></div>
 
-    <div id="lobby" class="central-box" style="display:none;">
-        <h2 id="lobby-title">BAĞLANTI BEKLENİYOR...</h2>
-        <button id="start-trigger" class="ready-btn" onclick="triggerAction()">HAZIR OL</button>
-    </div>
+    <nav class="top-nav">
+        <div class="nav-logo">ELECTRO-BATTLE // ARENA</div>
+        <a href="/" class="exit-btn">LOBİYE DÖN</a>
+    </nav>
 
-    <div id="arena" class="game-container" style="display:none;">
-        <div class="stats-bar">
-            <div id="q-number">MISSION: 1/10</div>
-            <div id="timer-bar-container"><div id="timer-bar"></div></div>
+    <div class="main-content">
+        <div id="init-screen" class="box-screen">
+            <h1 style="font-family: 'Orbitron'; font-size: 2rem; margin-bottom: 10px; color: var(--neon);">OPERASYON KODU</h1>
+            <p style="font-size: 1rem; color: #888; margin-bottom: 25px;">ARENAYA GİRMEK İÇİN KODU GİRİN</p>
+            <input type="text" id="room-input" class="room-input" placeholder="ODA KODU GİRİN">
+            <button class="ready-btn" onclick="joinMultiplayer()">ODAYA KATIL</button>
         </div>
-        <div id="q-text" class="question-box">VERİ ALINIYOR...</div>
-        <div id="feedback-box" style="height:30px; text-align:center; margin-bottom:10px;"></div>
-        <div id="options" class="options-grid"></div>
-        <div id="leaderboard" class="side-panel">
-            <h3>LİDERLİK TABLOSU</h3>
-            <div id="lb-list"></div>
-        </div>
-    </div>
 
-    <div id="end-screen" class="central-box" style="display:none;">
-        <h2>OPERASYON TAMAMLANDI</h2>
-        <div class="final-stat">PUAN: <span id="final-score">0</span></div>
-        <div class="final-stat">DOĞRU: <span id="final-correct">0</span></div>
-        <button class="ready-btn" onclick="location.reload()">YENİDEN BAŞLAT</button>
+        <div id="lobby" class="box-screen" style="display:none; max-width: 600px;">
+            <div class="user-count">ARENA MEVCUDU: <span id="count">1</span> OPERATÖR</div>
+            
+            <div id="category-area" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
+            <div id="player-list-area" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:25px;"></div>
+            
+            <button id="start-trigger" class="ready-btn" onclick="triggerAction()">HAZIR OL</button>
+            <div id="countdown" style="font-size: 2rem; margin-top: 20px; font-family: 'Orbitron'; color: var(--neon);"></div>
+        </div>
+
+        <div id="arena">
+            <div class="question-zone">
+                <div id="timer-bar"></div>
+                <div id="q-number" style="color: #888; margin-bottom: 10px; font-family: 'Orbitron'; font-size: 0.8rem;">MISSION: 1 / 10</div>
+                <h2 id="q-text">Veri Bekleniyor...</h2>
+                <div id="options" class="options-grid"></div>
+                <div id="feedback-box"></div>
+            </div>
+
+            <div class="leaderboard">
+                <div class="lb-title">CANLI SIRALAMA</div>
+                <div id="lb-list"></div>
+            </div>
+        </div>
+        
+        <div id="end-screen" class="box-screen" style="display:none;">
+            <h1 style="font-family: 'Orbitron'; font-size: 2rem; margin-bottom: 25px; color: var(--neon);">GÖREV TAMAMLANDI</h1>
+            <div style="font-size: 1.5rem; margin-bottom: 10px; font-family: 'Orbitron';">SKOR: <span id="final-score" style="color: var(--neon);">0</span></div>
+            <div style="font-size: 1.2rem; margin-bottom: 30px; font-family: 'Orbitron';">DOĞRU BİLGİ: <span id="final-correct">0</span></div>
+            <button class="ready-btn" onclick="location.reload()">YENİDEN BAŞLAT</button>
+        </div>
     </div>
 
     <script src="quiz.js"></script>
