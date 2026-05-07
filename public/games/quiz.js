@@ -8,12 +8,12 @@ const bigQuestionPool = {
         {q: "B=100.000 Gauss değeri kaç Tesla'dır?", a: ["0.1", "1", "10", "100"], c: 1},
         {q: "S7-1200 PLC hangi markaya aittir?", a: ["ABB", "Schneider", "Siemens", "Delta"], c: 2}
     ],
-    spor: [{q: "Fenerbahçe hangi yıl kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
-    tarih: [{q: "İstanbul fethi?", a: ["1071", "1453", "1299", "1923"], c: 1}],
-    genel: [{q: "En yüksek dağ?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
-    bilim: [{q: "H2O nedir?", a: ["Su", "Tuz", "Hava", "Şeker"], c: 0}],
-    edebiyat: [{q: "Sinekli Bakkal?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
-    film: [{q: "Inception?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
+    spor: [{q: "Fenerbahçe kaç yılında kuruldu?", a: ["1903", "1905", "1907", "1923"], c: 2}],
+    tarih: [{q: "İstanbul'un fethi?", a: ["1071", "1453", "1299", "1923"], c: 1}],
+    genel: [{q: "En yüksek dağ hangisidir?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}],
+    bilim: [{q: "H2O formülü neyi temsil eder?", a: ["Su", "Tuz", "Oksijen", "Helyum"], c: 0}],
+    edebiyat: [{q: "Sinekli Bakkal yazarı?", a: ["Halide Edib", "Reşat Nuri", "Peyami Safa", "Ziya Gökalp"], c: 0}],
+    film: [{q: "Interstellar yönetmeni kimdir?", a: ["Nolan", "Spielberg", "Cameron", "Tarantino"], c: 0}]
 };
 
 let currentQuestionSet = [];
@@ -40,10 +40,9 @@ function showCategorySelection() {
         document.getElementById('lobby').insertBefore(catArea, document.getElementById('start-trigger'));
     }
     catArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
-        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem;">
+        <button onclick="setCategory('${c}')" class="opt-btn" id="btn-${c}" style="padding:10px; font-size:0.7rem; border:1px solid #333;">
             ${c.toUpperCase()}
-        </button>
-    `).join('');
+        </button>`).join('');
     setCategory(selectedCategoryName);
 }
 
@@ -53,14 +52,15 @@ function setCategory(c) {
     if(document.getElementById(`btn-${c}`)) document.getElementById(`btn-${c}`).style.borderColor = "var(--neon)";
 }
 
+// KRİTİK: BUTON TETİKLEYİCİ
 function triggerAction() {
+    const btn = document.getElementById('start-trigger');
     if(!amIReady) {
         amIReady = true;
-        socket.emit('player_ready');
-        // Butonu hemen geri bildirim için güncelle
-        const btn = document.getElementById('start-trigger');
-        btn.innerText = "BEKLENİYOR...";
-        btn.style.background = "#222";
+        socket.emit('player_ready'); // Sunucuya bildir
+        btn.innerText = "SİNYAL GÖNDERİLDİ...";
+        btn.style.background = "#111";
+        btn.style.color = "#444";
     } else if(canStartServer) {
         socket.emit('admin_start_game', { category: selectedCategoryName });
     }
@@ -72,7 +72,8 @@ socket.on('update_player_list', (data) => {
 
     let listArea = document.getElementById('player-list-area') || createListArea();
     listArea.innerHTML = data.users.map(u => `
-        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
+        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; 
+                    border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px; border-radius:5px; font-size:0.7rem;">
             ${u.ready ? '✅' : '⏳'} ${u.icon} ${u.name}
         </div>`).join('');
 
@@ -85,10 +86,12 @@ socket.on('update_player_list', (data) => {
         btn.innerText = "OPERASYONU BAŞLAT";
         btn.style.background = "var(--neon)";
         btn.style.color = "black";
+        btn.style.boxShadow = "0 0 15px var(--neon)";
     } else {
         btn.innerText = "DİĞERLERİ BEKLENİYOR...";
         btn.style.background = "#222";
         btn.style.color = "#666";
+        btn.style.boxShadow = "none";
     }
 });
 
@@ -157,7 +160,11 @@ function updateLeaderboard() {
     let me = players.find(p => p.name === userName);
     if(!me) players.push({name: userName, score: myScore, icon: userIcon}); else me.score = myScore;
     players.sort((a, b) => b.score - a.score);
-    list.innerHTML = players.map((p, i) => `<div class="lb-item ${p.name === userName ? 'me' : ''}"><span>${i+1}. ${p.icon} ${p.name}</span><span>${p.score} P</span></div>`).join('');
+    list.innerHTML = players.map((p, i) => `
+        <div class="lb-item ${p.name === userName ? 'me' : ''}">
+            <span>${i+1}. ${p.icon} ${p.name}</span>
+            <span>${p.score} P</span>
+        </div>`).join('');
 }
 
 socket.on('update_room_leaderboard', (data) => {

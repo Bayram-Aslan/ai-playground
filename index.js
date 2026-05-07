@@ -37,8 +37,6 @@ function updateRoomState(roomName) {
     if(!roomName) return;
     const users = getRoomUsers(roomName);
     const allReady = users.length > 0 && users.every(u => u.ready);
-    
-    // Odadaki HERKESE güncel listeyi ve başlatma yetkisini yayınla
     io.to(roomName).emit('update_player_list', { 
         users: users,
         count: users.length,
@@ -55,7 +53,7 @@ io.on('connection', (socket) => {
         socket.join(data.roomName);
         socket.username = data.username;
         socket.userIcon = data.userIcon;
-        socket.isReady = false; 
+        socket.isReady = false;
         socket.currentRoom = data.roomName;
         updateRoomState(data.roomName);
     });
@@ -89,4 +87,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => { console.log(`ARENA SERVER: ${PORT}`); });
+server.listen(PORT, () => { console.log(`SYSTEM ACTIVE: ${PORT}`); });
