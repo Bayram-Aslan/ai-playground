@@ -16,7 +16,7 @@ const bigQuestionPool = {
     genel: [{q: "Dünyanın en yüksek dağı hangisidir?", a: ["Everest", "K2", "Ağrı", "Erciyes"], c: 0}]
 };
 
-// Eski sistemindeki orijinal Bot rakipler
+// Bot rakipler
 let botPlayers = [
     {name: "AYHANCAN", score: 0, icon: "⚡"},
     {name: "CENK_HOCA", score: 0, icon: "👨‍🏫"},
@@ -26,9 +26,8 @@ let botPlayers = [
 
 let currentQuestionSet = [], currentQ = 0, myScore = 0, timer, timeLeft = 10;
 let amIReady = false, canStartServer = false, selectedCategoryName = "elektrik", players = [];
-let isMultiplayer = false; // Bireysel mi Çoklu mu kontrolü
+let isMultiplayer = false;
 
-// SİSTEM YÜKLENDİĞİNDE BİREYSEL KATEGORİLERİ EKRANA BAS
 window.onload = () => {
     const singleArea = document.getElementById('single-category-area');
     singleArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
@@ -37,17 +36,14 @@ window.onload = () => {
         </button>`).join('');
 };
 
-// --- BİREYSEL OYUN BAŞLATMA (BOTLARA KARŞI) ---
+// --- BİREYSEL & ODA GİRİŞLERİ ---
 function startSinglePlayer(category) {
     isMultiplayer = false;
     currentQuestionSet = bigQuestionPool[category];
-    players = [...botPlayers]; // Sadece botları ekle (Kullanıcı kendisi eklenecek)
-    document.getElementById('init-screen').style.display = 'none';
-    document.getElementById('arena').style.display = 'grid';
-    loadQuestion();
+    players = [...botPlayers]; 
+    startCountdown(); // Direkt geri sayıma gönder
 }
 
-// --- ÇOKLU OYUNCU (ODA) SİSTEMİ ---
 function joinMultiplayer() {
     const room = document.getElementById('room-input').value.toUpperCase().trim();
     if(room.length < 1) return alert("Lütfen bir oda kodu girin!");
@@ -105,18 +101,43 @@ socket.on('update_player_list', (data) => {
     }
 });
 
+// YÖNETİCİ OYUNU BAŞLATTI
 socket.on('game_started_by_admin', (data) => {
     currentQuestionSet = bigQuestionPool[data.category];
-    document.getElementById('lobby').style.display = 'none';
-    document.getElementById('arena').style.display = 'grid';
-    loadQuestion();
+    startCountdown();
 });
 
-// --- ORTAK OYUN MANTIĞI (SORULAR VE SÜRE) ---
+// --- YENİ: 3-2-1 GERİ SAYIM MANTIĞI ---
+function startCountdown() {
+    document.getElementById('init-screen').style.display = 'none';
+    document.getElementById('lobby').style.display = 'none';
+    const cdScreen = document.getElementById('countdown-screen');
+    cdScreen.style.display = 'block';
+    
+    let cd = 3;
+    const bigCd = document.getElementById('big-countdown');
+    bigCd.innerText = cd;
+    
+    let interval = setInterval(() => {
+        cd--;
+        if(cd > 0) {
+            bigCd.innerText = cd;
+        } else if (cd === 0) {
+            bigCd.innerText = "BAŞLA!";
+        } else {
+            clearInterval(interval);
+            cdScreen.style.display = 'none';
+            document.getElementById('arena').style.display = 'grid';
+            loadQuestion();
+        }
+    }, 1000);
+}
+
+// --- ORTAK OYUN MANTIĞI ---
 function loadQuestion() {
     if(currentQ >= 10 || currentQ >= currentQuestionSet.length) return endBattle();
     timeLeft = 10;
-    updateLeaderboard(); // Her soruda tabloyu güncelle
+    updateLeaderboard(); 
     const qData = currentQuestionSet[currentQ];
     
     document.getElementById('q-number').innerText = `MISSION: ${currentQ + 1} / 10`;
@@ -158,18 +179,65 @@ function checkAnswer(idx) {
         document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI!</span>`;
     }
     
-    // Skorları ilet veya Botları simüle et
     if(isMultiplayer) {
         socket.emit('submit_score', { username: userName, score: myScore });
     } else {
-        // Eski bot simülasyon mantığı
         players.forEach(p => { 
             if(p.name !== userName && Math.random() > 0.4) p.score += Math.floor(Math.random() * 10 + 10); 
         });
         updateLeaderboard();
     }
     
-    setTimeout(() => { currentQ++; loadQuestion(); }, 2000);
+    // YENİ: Anında diğer soruya geçmek yerine 1.5 saniye sonra Ara Tabloyu göster
+    setTimeout(() => { showRoundSummary(); }, 1500);
+}
+
+// --- YENİ: ARA PUAN TABLOSU ---
+function showRoundSummary() {
+    document.getElementById('arena').style.display = 'none';
+    
+    // Puanları sırala ve lideri bul
+    players.sort((a, b) => b.score - a.score);
+    const leader = players[0];
+    
+    // Kendini bul ve sıralamanı hesapla
+    let me = players.find(p => p.name === userName);
+    if(!me) {
+        me = {name: userName, score: myScore, icon: userIcon};
+        players.push(me);
+        players.sort((a, b) => b.score - a.score);
+    }
+    const myRank = players.findIndex(p => p.name === userName) + 1;
+    
+    // Ekrana Verileri Bas
+    document.getElementById('round-rank').innerText = `#${myRank}`;
+    const gapEl = document.getElementById('round-gap');
+    
+    if (myRank === 1) {
+        gapEl.innerText = "ZİRVEDESİN! KORU BU YERİ!";
+        gapEl.style.color = "var(--neon)";
+    } else {
+        const gap = leader.score - me.score;
+        gapEl.innerText = `Liderin ${gap} Puan Gerisindesin!`;
+        gapEl.style.color = "var(--danger)";
+    }
+    
+    document.getElementById('round-leader-name').innerText = `MEVCUT LİDER: ${leader.icon || '🤖'} ${leader.name}`;
+    
+    const rsScreen = document.getElementById('round-leaderboard');
+    rsScreen.style.display = 'block';
+    
+    // 4 Saniye sonra ara tabloyu kapat ve yeni soruya (veya bitişe) geç
+    setTimeout(() => {
+        rsScreen.style.display = 'none';
+        currentQ++;
+        if(currentQ >= 10 || currentQ >= currentQuestionSet.length) {
+            endBattle();
+        } else {
+            document.getElementById('arena').style.display = 'grid';
+            loadQuestion();
+        }
+    }, 4000); 
 }
 
 function updateLeaderboard() {
@@ -186,7 +254,6 @@ function updateLeaderboard() {
         </div>`).join('');
 }
 
-// Çoklu oyuncuda listeden veri gelir
 socket.on('update_room_leaderboard', (data) => {
     if(!isMultiplayer) return;
     let p = players.find(x => x.name === data.username);
