@@ -76,9 +76,13 @@ io.on('connection', (socket) => {
         broadcastRoomUpdate(socket.currentRoom);
     });
 
+    // YÖNETİCİ OYUNU BAŞLATTIĞINDA SORULARI HERKESE DAĞITIR
     socket.on('admin_start_game', (data) => {
         if(socket.currentRoom) {
-            io.to(socket.currentRoom).emit('game_started_by_admin', { category: data.category });
+            io.to(socket.currentRoom).emit('game_started_by_admin', { 
+                category: data.category,
+                questions: data.questions // Herkese aynı soruları gönderir
+            });
         }
     });
 

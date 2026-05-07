@@ -16,7 +16,6 @@ let isMultiplayer = false;
 let canAnswer = true; 
 let hasShownSummary = false; 
 
-// Soru Çekme İşlemi (sorular.js'den alır)
 function getRandomQuestions(category) {
     let pool = (typeof bigQuestionPool !== 'undefined') ? bigQuestionPool[category] : [];
     if(!pool || pool.length === 0) return [];
@@ -68,7 +67,9 @@ function triggerAction() {
         amIReady = true;
         socket.emit('player_ready');
     } else if(canStartServer) {
-        socket.emit('admin_start_game', { category: selectedCategoryName });
+        // YÖNETİCİ SORULARI ÇEKER VE SUNUCUYA İLETİR
+        const selectedQs = getRandomQuestions(selectedCategoryName);
+        socket.emit('admin_start_game', { category: selectedCategoryName, questions: selectedQs });
     }
 }
 
@@ -88,7 +89,8 @@ socket.on('update_player_list', (data) => {
 });
 
 socket.on('game_started_by_admin', (data) => {
-    currentQuestionSet = getRandomQuestions(data.category);
+    // ODADAKİ HERKES YÖNETİCİNİN ÇEKTİĞİ AYNI SORULARI ALIR
+    currentQuestionSet = data.questions; 
     startCountdown();
 });
 
@@ -178,11 +180,11 @@ function checkAnswer(idx) {
         opts[idx].style.borderColor = 'var(--neon)';
         opts[idx].style.opacity = '1';
         
-        // YENİ PUANLAMA MANTIĞI: 20 PUAN SABİT + KALAN SANİYE
-        let gain = 20 + Math.ceil(timeLeft); 
+        // YENİ PUANLAMA MANTIĞI: 20 PUAN + KALAN SANİYE
+        let gain = 20 + Math.floor(timeLeft); 
         myScore += gain; 
         confetti({ particleCount: 50, spread: 60 });
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>SİSTEM DOĞRULANDI! +${gain} Puan</span>`;
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--neon)'>DOĞRU! +${gain} Puan</span>`;
     } else {
         if(idx !== -1) {
             opts[idx].style.borderColor = 'var(--danger)';
@@ -190,7 +192,7 @@ function checkAnswer(idx) {
         }
         opts[correctIdx].style.borderColor = 'var(--neon)';
         opts[correctIdx].style.opacity = '1';
-        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI VERİ GİRİŞİ!</span>`;
+        document.getElementById('feedback-box').innerHTML = `<span style='color:var(--danger)'>HATALI!</span>`;
     }
     
     if(isMultiplayer) {
@@ -198,7 +200,6 @@ function checkAnswer(idx) {
         socket.emit('player_answered'); 
         document.getElementById('feedback-box').innerHTML += `<br><span style="font-size:0.75rem; color:#888;">Diğer operatörler bekleniyor...</span>`;
     } else {
-        // Botların yeni puanlama mantığına göre simülasyonu
         players.forEach(p => { 
             if(p.name !== userName && Math.random() > 0.3) p.score += 20 + Math.floor(Math.random() * 15); 
         });
@@ -287,7 +288,6 @@ function endBattle() {
     document.getElementById('end-screen').style.display = 'block';
     document.getElementById('final-score').innerText = myScore;
     
-    // FİNAL LİDERLİK TABLOSUNU HTML İÇİNE BASIYORUZ
     const finalLb = document.getElementById('final-leaderboard');
     players.sort((a, b) => b.score - a.score);
     finalLb.innerHTML = players.map((p, i) => `
