@@ -16,6 +16,17 @@ let isMultiplayer = false;
 let canAnswer = true; 
 let hasShownSummary = false; 
 
+// Emojiler ve Kategori İsimleri
+const categoryIcons = {
+    bilim: "🔬 BİLİM",
+    edebiyat: "📚 EDEBİYAT",
+    elektrik: "⚡ ELEKTRİK",
+    genelkultur: "🌍 G. KÜLTÜR",
+    sinema: "🎬 SİNEMA",
+    spor: "🏅 SPOR",
+    tarih: "⏳ TARİH"
+};
+
 function getRandomQuestions(category) {
     let pool = (typeof bigQuestionPool !== 'undefined') ? bigQuestionPool[category] : [];
     if(!pool || pool.length === 0) return [];
@@ -27,7 +38,7 @@ window.onload = () => {
     if(typeof bigQuestionPool !== 'undefined') {
         const singleArea = document.getElementById('single-category-area');
         singleArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
-            <button onclick="startSinglePlayer('${c}')" class="cat-btn">${c.toUpperCase()}</button>
+            <button onclick="startSinglePlayer('${c}')" class="cat-btn cat-${c}">${categoryIcons[c] || c.toUpperCase()}</button>
         `).join('');
     }
 };
@@ -50,7 +61,7 @@ function joinMultiplayer() {
     if(typeof bigQuestionPool !== 'undefined') {
         const multiArea = document.getElementById('multi-category-area');
         multiArea.innerHTML = Object.keys(bigQuestionPool).map(c => `
-            <button onclick="setMultiCat('${c}')" class="cat-btn" id="btn-${c}">${c.toUpperCase()}</button>
+            <button onclick="setMultiCat('${c}')" class="cat-btn cat-${c}" id="btn-${c}">${categoryIcons[c] || c.toUpperCase()}</button>
         `).join('');
         setMultiCat(Object.keys(bigQuestionPool)[0]); 
     }
@@ -178,7 +189,6 @@ function checkAnswer(idx) {
         opts[idx].style.borderColor = 'var(--neon)';
         opts[idx].style.opacity = '1';
         
-        // YENİ PUANLAMA MANTIĞI: SADECE KALAN SANİYE (Maksimum 20)
         let gain = Math.ceil(timeLeft); 
         myScore += gain; 
         confetti({ particleCount: 50, spread: 60 });
@@ -198,7 +208,6 @@ function checkAnswer(idx) {
         socket.emit('player_answered'); 
         document.getElementById('feedback-box').innerHTML += `<br><span style="font-size:0.75rem; color:#888;">Diğer operatörler bekleniyor...</span>`;
     } else {
-        // Botların yeni sisteme göre (Max 20 üzerinden) puan kazanması
         players.forEach(p => { 
             if(p.name !== userName && Math.random() > 0.3) p.score += Math.ceil(Math.random() * 20); 
         });
@@ -241,13 +250,12 @@ function showRoundSummary() {
         const playerAbove = players[myRank - 2]; 
         const gap = playerAbove.score - me.score;
         
-        // YENİ EŞİTLİK (BERABERLİK) MANTIĞI
         if (gap === 0) {
             gapEl.innerText = `BİR ÜST SIRADAKİ (${playerAbove.name}) İLE AYNI PUANDASIN!`;
-            gapEl.style.color = "#ffd700"; // Sarı uyarı rengi
+            gapEl.style.color = "#ffd700"; 
         } else {
             gapEl.innerText = `BİR ÜST SIRADAN (${playerAbove.name}) ${gap} PUAN GERİDESİN!`;
-            gapEl.style.color = "var(--danger)"; // Kırmızı uyarı rengi
+            gapEl.style.color = "var(--danger)"; 
         }
     }
     
