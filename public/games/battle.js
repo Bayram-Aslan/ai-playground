@@ -122,23 +122,12 @@ function showHitNumbers(p1, p2) {
     p2Text.className = "hit-power-display show";
 }
 
-// YENİ: ÇARPIŞMA FLAŞ EFEKTİ
-function createImpactFlash() {
-    const clashCenter = document.getElementById('clash-center');
-    const wave = document.createElement('div');
-    wave.className = 'impact-wave';
-    clashCenter.appendChild(wave);
-    setTimeout(() => wave.remove(), 500);
-}
-
 // HASAR HESAPLAMA (SAF FARK)
 function resolveCombat(power1, power2) {
     let dmg = Math.abs(power1 - power2);
     let msgBox = document.getElementById('msg-box');
     const p1Text = document.getElementById('p1-power-text');
     const p2Text = document.getElementById('p2-power-text');
-
-    createImpactFlash(); // Rakamlar çarpıştığında flaş patlar!
 
     if (power1 > power2) {
         p2Hp -= dmg;
@@ -168,7 +157,7 @@ function resolveCombat(power1, power2) {
     setTimeout(() => {
         if (p1Hp <= 0 || p2Hp <= 0) endRound();
         else nextTurn(); 
-    }, 1600); // Rakamlar biraz daha ekranda kalsın diye süreyi uzattık
+    }, 1600);
 }
 
 // UÇAN HASAR YAZISI
@@ -208,9 +197,9 @@ function resetBarUI(btnText, btnBg, msgText, glowColor) {
     btn.style.background = btnBg;
     
     if(glowColor === 'var(--cyan)') {
-        btn.style.boxShadow = "0 8px 0 #007799, 0 15px 30px rgba(0,210,255,0.5), inset 0 0 15px rgba(255,255,255,0.4)";
+        btn.style.boxShadow = "0 8px 0 #007799";
     } else {
-        btn.style.boxShadow = "0 8px 0 #007799, 0 15px 30px rgba(0,255,136,0.5), inset 0 0 15px rgba(255,255,255,0.4)";
+        btn.style.boxShadow = "0 8px 0 #007799";
     }
     
     btn.disabled = false;
@@ -277,7 +266,7 @@ function finishMatch() {
 
     hitBtn.innerText = "TEKRAR OYNA";
     hitBtn.style.background = "linear-gradient(45deg, var(--gold), #ff8800)";
-    hitBtn.style.boxShadow = "0 8px 0 #ccaa00, 0 15px 30px rgba(255,215,0,0.5)";
+    hitBtn.style.boxShadow = "0 8px 0 #ccaa00";
     hitBtn.onclick = () => location.reload();
     hitBtn.disabled = false;
 }

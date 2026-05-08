@@ -15,8 +15,7 @@
         
         body { 
             background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
-            /* Mobil tarayıcı adres çubuğu sorununu çözen dVH kullanımı */
-            min-height: 100vh; height: 100dvh; 
+            height: 100vh; height: 100dvh; /* Mobil tarayıcı adres çubuğu düzeltmesi */
             overflow: hidden; display: flex; flex-direction: column; 
         }
 
@@ -35,87 +34,104 @@
 
         /* --- MENÜ --- */
         #mode-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        .lobby-frame { width: 90%; max-width: 450px; padding: clamp(20px, 4vh, 40px) 20px; border-radius: 20px; background: linear-gradient(145deg, rgba(15,15,25,0.9), rgba(5,5,10,1)); border: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 0 50px rgba(0,0,0,0.8); text-align: center; }
-        .mode-title { font-family: 'Orbitron'; color: #fff; font-size: clamp(1.5rem, 6vw, 2.2rem); margin-bottom: 5px; text-shadow: 0 0 20px var(--cyan); }
-        .mode-subtitle { color: var(--cyan); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 25px; }
-        .mode-btn { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: white; font-family: 'Orbitron'; font-size: clamp(0.9rem, 4vw, 1.1rem); padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s; }
-        .mode-btn span { display: block; font-size: 0.7rem; color: #ccc; font-family: 'Rajdhani'; margin-top: 5px; }
+        .lobby-frame { width: 90%; max-width: 450px; padding: 40px 20px; border-radius: 20px; background: linear-gradient(145deg, rgba(15,15,25,0.9), rgba(5,5,10,1)); border: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 0 50px rgba(0,0,0,0.8); text-align: center; }
+        .mode-title { font-family: 'Orbitron'; color: #fff; font-size: 2.2rem; margin-bottom: 5px; text-shadow: 0 0 20px var(--cyan); }
+        .mode-subtitle { color: var(--cyan); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 25px; }
+        .mode-btn { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: white; font-family: 'Orbitron'; font-size: 1.1rem; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s; }
+        .mode-btn span { display: block; font-size: 0.75rem; color: #ccc; font-family: 'Rajdhani'; margin-top: 5px; }
 
         /* --- ÜST PANEL --- */
-        .top-nav { height: clamp(45px, 6vh, 60px); background: rgba(0,0,0,0.7); border-bottom: 1px solid rgba(0,210,255,0.3); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
-        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: clamp(0.9rem, 4vw, 1.2rem); }
-        .exit-btn { color: var(--danger); text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; border: 1px solid var(--danger); padding: 4px 10px; border-radius: 6px; }
+        .top-nav { height: 60px; background: rgba(0,0,0,0.7); border-bottom: 1px solid rgba(0,210,255,0.3); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 50; }
+        .nav-logo { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 1.2rem; }
+        .exit-btn { color: var(--danger); text-decoration: none; font-family: 'Orbitron'; font-size: 0.8rem; border: 1px solid var(--danger); padding: 5px 12px; border-radius: 6px; }
 
         /* --- ANA ARENA --- */
-        /* padding-bottom: env() özelliği iPhone alt çizgisine (Home Indicator) çarpmasını önler */
         .battle-arena { 
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding: 10px 15px calc(15px + env(safe-area-inset-bottom)) 15px; 
+            padding: 15px 15px calc(20px + env(safe-area-inset-bottom)) 15px; 
             width: 100%; max-width: 900px; margin: 0 auto; display: none; position: relative; 
         }
 
         /* SKORBOARD */
-        .scoreboard { width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: clamp(5px, 1.5vh, 10px); margin-bottom: 5px; }
+        .scoreboard { width: 100%; display: flex; justify-content: center; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 10px; margin-bottom: 10px; }
         .sb-player { flex: 1; text-align: center; }
-        .sb-name { font-family: 'Orbitron'; font-size: clamp(0.6rem, 2.5vw, 0.8rem); color: #ddd; margin-bottom: 2px; }
-        .sb-score { font-family: 'Orbitron'; font-size: clamp(1.8rem, 6vw, 2.5rem); font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 0 10px var(--cyan); }
-        .sb-center { padding: 0 10px; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
-        .round-badge { background: linear-gradient(45deg, var(--gold), #ff8800); color: black; font-family: 'Orbitron'; font-weight: 900; padding: 4px 10px; border-radius: 20px; font-size: clamp(0.7rem, 3vw, 0.9rem); }
+        .sb-name { font-family: 'Orbitron'; font-size: 0.8rem; color: #ddd; margin-bottom: 2px; }
+        /* Kırık kutu hatasını çözmek için font Rajdhani yapıldı */
+        .sb-score { font-family: 'Rajdhani', sans-serif; font-size: 2.8rem; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 0 10px var(--cyan); }
+        .sb-center { padding: 0 15px; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
+        .round-badge { background: linear-gradient(45deg, var(--gold), #ff8800); color: black; font-family: 'Orbitron'; font-weight: 900; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
 
         /* CAN BARLARI */
         .health-container { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .hp-wrap { flex: 1; height: clamp(16px, 3vh, 22px); background: #000; border: 1px solid #333; border-radius: 10px; position: relative; }
+        .hp-wrap { flex: 1; height: 22px; background: #000; border: 1px solid #333; border-radius: 10px; position: relative; }
         .hp-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ffcc); width: 100%; transition: width 0.3s ease; }
         .hp-enemy { background: linear-gradient(-90deg, #ff0055, #ff5555); float: right; }
-        .hp-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: clamp(0.7rem, 2.5vw, 0.9rem); font-weight: 900; z-index: 5; text-shadow: 1px 1px 2px black; }
+        .hp-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 0.9rem; font-weight: 900; z-index: 5; text-shadow: 1px 1px 2px black; }
 
         /* ÇARPIŞMA EKRANI */
         .clash-zone { width: 100%; display: flex; justify-content: space-around; align-items: center; flex: 1; min-height: 0; }
         .fighter-col { display: flex; flex-direction: column; align-items: center; position: relative; }
         
         .avatar-box { 
-            font-size: clamp(2rem, 8vw, 4rem); display: flex; align-items: center; justify-content: center;
-            width: clamp(60px, 15vw, 110px); height: clamp(60px, 15vw, 110px); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            width: 110px; height: 110px; border-radius: 50%; font-size: 4rem;
             background: rgba(0,0,0,0.5); border: 2px solid var(--neon); box-shadow: 0 0 15px rgba(0,255,136,0.2);
             overflow: hidden;
         }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        .hit-power-display { font-family: 'Orbitron'; font-size: clamp(2rem, 7vw, 4rem); font-weight: 900; position: absolute; top: 100%; opacity: 0; transform: scale(0.5); transition: 0.3s; z-index: 20; }
+        .hit-power-display { font-family: 'Orbitron'; font-size: 4rem; font-weight: 900; position: absolute; top: 100%; opacity: 0; transform: scale(0.5); transition: 0.3s; z-index: 20; }
         .hit-power-display.show { opacity: 1; transform: scale(1); color: white; }
         .hit-power-display.winner { color: var(--neon); text-shadow: 0 0 20px var(--neon); transform: scale(1.2); }
         .hit-power-display.loser { color: var(--danger); opacity: 0.5; transform: scale(0.8); }
 
-        .vs-text { font-family: 'Orbitron'; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; color: #555; font-style: italic; }
-
-        .impact-wave { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, white, transparent); animation: shockwave 0.4s ease-out forwards; pointer-events: none; z-index: 15; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0; }
-        @keyframes shockwave { 0% { width: 0; height: 0; opacity: 1; } 100% { width: 300px; height: 300px; opacity: 0; } }
-
-        .dmg-text { position: absolute; font-family: 'Orbitron'; font-weight: 900; font-size: clamp(1.8rem, 6vw, 3rem); animation: floatDmg 0.8s ease-out forwards; pointer-events: none; z-index: 100; text-shadow: 0 0 15px currentColor; }
-        @keyframes floatDmg { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.4); opacity: 0; } }
+        .vs-text { font-family: 'Orbitron'; font-size: 2.5rem; font-weight: 900; color: #555; font-style: italic; }
+        .dmg-text { position: absolute; font-family: 'Orbitron'; font-weight: 900; font-size: 3rem; animation: floatDmg 0.8s ease-out forwards; pointer-events: none; z-index: 100; text-shadow: 0 0 15px currentColor; }
+        @keyframes floatDmg { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-60px) scale(1.4); opacity: 0; } }
 
         /* GÜÇ ÖLÇER BAR */
-        .power-system { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: auto; margin-bottom: clamp(10px, 2vh, 20px); }
-        .meter-bg { width: 100%; max-width: 600px; height: clamp(25px, 5vh, 40px); background: #000; border: 2px solid rgba(255,255,255,0.2); border-radius: 15px; overflow: hidden; position: relative; }
+        .power-system { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: auto; margin-bottom: 20px; }
+        .meter-bg { width: 100%; max-width: 600px; height: 35px; background: #000; border: 2px solid rgba(255,255,255,0.2); border-radius: 15px; overflow: hidden; position: relative; }
         #power-fill { position: absolute; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #00d2ff, #00ff88, #ffcf00, #ff0055); transition: none; }
 
         /* KONTROLLER VE BUTON */
         .control-area { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        #msg-box { font-family: 'Orbitron'; font-size: clamp(0.85rem, 3vw, 1.1rem); color: white; height: 20px; }
+        #msg-box { font-family: 'Orbitron'; font-size: 1.1rem; color: white; height: 20px; }
         
         .hit-btn { 
-            width: 100%; max-width: 400px; 
-            padding: clamp(12px, 2.5vh, 20px); /* Mobil için padding daraltıldı */
+            width: 100%; max-width: 400px; padding: 20px; 
             background: linear-gradient(45deg, var(--neon), var(--cyan)); color: black; border: none; 
-            font-family: 'Orbitron'; font-weight: 900; font-size: clamp(1.3rem, 5vw, 1.8rem); /* Font küçültüldü */
-            border-radius: 12px; cursor: pointer; transition: 0.1s;
-            box-shadow: 0 6px 0 #007799; /* Gölge kısaltıldı */
+            font-family: 'Orbitron'; font-weight: 900; font-size: 2rem; letter-spacing: 4px;
+            border-radius: 15px; cursor: pointer; transition: 0.1s;
+            box-shadow: 0 8px 0 #007799; display: flex; align-items: center; justify-content: center; line-height: 1;
         }
         .hit-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #007799; background: white; }
         .hit-btn:disabled { background: #222; color: #555; box-shadow: none; cursor: not-allowed; transform: none; }
 
         .shake-screen { animation: shakeEffect 0.3s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shakeEffect { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(3px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        /* MOBİL CİHAZ OPTİMİZASYONLARI */
+        @media (max-width: 768px) {
+            .top-nav { height: 50px; padding: 0 10px; }
+            .nav-logo { font-size: 1rem; }
+            .scoreboard { padding: 5px 10px; gap: 5px; margin-bottom: 5px; }
+            .sb-score { font-size: 2.2rem; }
+            .sb-name { font-size: 0.65rem; }
+            .round-badge { font-size: 0.8rem; padding: 3px 10px; }
+            .health-container { margin-bottom: 5px; }
+            .hp-wrap { height: 16px; }
+            .hp-text { font-size: 0.75rem; }
+            .avatar-box { width: 70px; height: 70px; font-size: 2.5rem; }
+            .hit-power-display { font-size: 2.5rem; }
+            .vs-text { font-size: 1.5rem; }
+            .power-system { margin-bottom: 10px; }
+            .meter-bg { height: 25px; }
+            #msg-box { font-size: 0.9rem; }
+            /* Buton küçültüldü ve içindeki yazı netleştirildi */
+            .hit-btn { padding: 15px; font-size: 1.5rem; border-radius: 10px; box-shadow: 0 6px 0 #007799; letter-spacing: 2px; }
+            .dmg-text { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>
@@ -160,7 +176,7 @@
                 <div id="p1-hp" class="hp-fill"></div>
                 <div id="p1-hp-text" class="hp-text">150 / 150</div>
             </div>
-            <div style="font-family:'Orbitron'; font-size:clamp(0.7rem, 2vw, 0.9rem); color:#ccc; font-weight:900;">HP</div>
+            <div style="font-family:'Orbitron'; font-size:0.8rem; color:#ccc; font-weight:900;">HP</div>
             <div class="hp-wrap">
                 <div id="p2-hp" class="hp-fill hp-enemy"></div>
                 <div id="p2-hp-text" class="hp-text">150 / 150</div>
@@ -180,7 +196,7 @@
         </div>
 
         <div class="power-system">
-            <div style="font-size: clamp(0.6rem, 2vw, 0.8rem); font-family: 'Orbitron'; color: #fff; letter-spacing: 2px;">GÜÇ SEVİYESİ</div>
+            <div style="font-size: 0.7rem; font-family: 'Orbitron'; color: #fff; letter-spacing: 2px;">GÜÇ SEVİYESİ</div>
             <div class="meter-bg"><div id="power-fill"></div></div>
         </div>
 
