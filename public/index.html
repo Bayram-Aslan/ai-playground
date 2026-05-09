@@ -82,7 +82,7 @@
         .modal-box { 
             background: linear-gradient(160deg, rgba(20,25,30,0.9), rgba(10,10,12,0.95));
             padding: clamp(30px, 5vw, 50px); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 25px; 
-            text-align: center; width: 100%; max-width: 450px; position: relative; overflow: hidden;
+            text-align: center; width: 100%; max-width: 480px; position: relative; overflow: hidden;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
         }
 
@@ -97,21 +97,33 @@
 
         .form-input { 
             background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); color: white; 
-            padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 25px;
+            padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 20px;
             font-family: 'Rajdhani'; font-weight: 600; text-align: center; font-size: 1.2rem; letter-spacing: 2px;
         }
         .form-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
 
         .avatar-title { font-family: 'Rajdhani'; color: #777; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 10px; font-weight: 700; }
         
-        .avatars { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+        /* --- YENİ KAYDIRILABİLİR AVATAR ALANI --- */
+        .avatars { 
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; 
+            max-height: 220px; 
+            overflow-y: auto; 
+            padding: 15px; background: rgba(0,0,0,0.4); border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        /* Özel Siberpunk Scrollbar Tasarımı */
+        .avatars::-webkit-scrollbar { width: 8px; }
+        .avatars::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 10px; }
+        .avatars::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
+
         .av-box { 
-            font-size: clamp(1.8rem, 6vw, 2.5rem); cursor: pointer; width: clamp(50px, 15vw, 70px); height: clamp(50px, 15vw, 70px);
+            flex-shrink: 0; cursor: pointer; width: 65px; height: 65px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.6); transition: 0.3s;
+            border-radius: 12px; border: 2px solid transparent; background: rgba(0,0,0,0.6); transition: 0.3s;
             overflow: hidden;
         }
-        .av-box.active { border-color: var(--neon-green); background: rgba(0,255,136,0.15); transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,255,136,0.3); }
+        .av-box.active { border-color: var(--neon-green); transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,255,136,0.3); }
         .av-box img { width: 100%; height: 100%; object-fit: cover; }
 
         .connect-btn {
@@ -143,17 +155,12 @@
         
         #active-avatar-container { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--neon-green); }
         #active-avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-        #active-avatar-container span { font-size: 1.2rem; }
 
         .logout-btn { background: transparent; border: 1px solid rgba(255,30,30,0.3); color: #ff1e1e; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 700; transition: 0.3s; }
         .logout-btn:hover { background: rgba(255,30,30,0.15); border-color: #ff1e1e; box-shadow: 0 0 15px rgba(255,30,30,0.3); color: #fff; }
 
         /* OYUN KARTLARI */
-        .arena-grid {
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 25px; width: 100%; max-width: 1200px;
-        }
+        .arena-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; width: 100%; max-width: 1200px; }
 
         .game-panel {
             background: linear-gradient(160deg, rgba(20,20,30,0.6), rgba(5,5,10,0.8));
@@ -181,7 +188,6 @@
         .stat-lbl { color: #555; font-size: 0.8rem; letter-spacing: 1px; }
         .stat-vlu { color: #fff; font-weight: 900; font-size: 1rem; text-shadow: 0 0 10px var(--c); }
 
-        /* RESPONSIVE */
         @media (max-width: 1024px) {
             .side-laser { display: none; }
             .nav-top { flex-wrap: wrap; justify-content: space-between; gap: 20px; }
@@ -220,16 +226,35 @@
             
             <input type="text" id="operator-name" class="form-input" placeholder="OPERATÖR ADI..." maxlength="15" autocomplete="off">
             
-            <div class="avatar-title">AVATAR SEÇİMİ</div>
+            <div class="avatar-title">KARAKTER SEÇİMİ</div>
+            
             <div class="avatars">
-                <div class="av-box active" onclick="setAvatar('⚡', this)">⚡</div>
-                <div class="av-box" onclick="setAvatar('🤖', this)">🤖</div>
-                <div class="av-box" onclick="setAvatar('🎬', this)">
-                    <img src="al-pacino.jpeg" onerror="this.parentElement.innerText='🎬'">
-                </div>
-                <div class="av-box" onclick="setAvatar('🏎️', this)">🏎️</div>
-                <div class="av-box" onclick="setAvatar('🎯', this)">🎯</div>
-                <div class="av-box" onclick="setAvatar('🛰️', this)">🛰️</div>
+                <div class="av-box active" data-icon="avatar/f1.jpeg" onclick="setAvatar('avatar/f1.jpeg', this)"><img src="avatar/f1.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f2.jpeg" onclick="setAvatar('avatar/f2.jpeg', this)"><img src="avatar/f2.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f3.jpeg" onclick="setAvatar('avatar/f3.jpeg', this)"><img src="avatar/f3.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f4.jpeg" onclick="setAvatar('avatar/f4.jpeg', this)"><img src="avatar/f4.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f5.jpeg" onclick="setAvatar('avatar/f5.jpeg', this)"><img src="avatar/f5.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f6.jpeg" onclick="setAvatar('avatar/f6.jpeg', this)"><img src="avatar/f6.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f7.jpeg" onclick="setAvatar('avatar/f7.jpeg', this)"><img src="avatar/f7.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f8.jpeg" onclick="setAvatar('avatar/f8.jpeg', this)"><img src="avatar/f8.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f9.jpeg" onclick="setAvatar('avatar/f9.jpeg', this)"><img src="avatar/f9.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f10.jpeg" onclick="setAvatar('avatar/f10.jpeg', this)"><img src="avatar/f10.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f11.jpeg" onclick="setAvatar('avatar/f11.jpeg', this)"><img src="avatar/f11.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f12.jpeg" onclick="setAvatar('avatar/f12.jpeg', this)"><img src="avatar/f12.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f13.jpeg" onclick="setAvatar('avatar/f13.jpeg', this)"><img src="avatar/f13.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f14.jpeg" onclick="setAvatar('avatar/f14.jpeg', this)"><img src="avatar/f14.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f15.jpeg" onclick="setAvatar('avatar/f15.jpeg', this)"><img src="avatar/f15.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f16.jpeg" onclick="setAvatar('avatar/f16.jpeg', this)"><img src="avatar/f16.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f17.jpeg" onclick="setAvatar('avatar/f17.jpeg', this)"><img src="avatar/f17.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f18.jpeg" onclick="setAvatar('avatar/f18.jpeg', this)"><img src="avatar/f18.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f19.jpeg" onclick="setAvatar('avatar/f19.jpeg', this)"><img src="avatar/f19.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f20.jpeg" onclick="setAvatar('avatar/f20.jpeg', this)"><img src="avatar/f20.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f21.jpeg" onclick="setAvatar('avatar/f21.jpeg', this)"><img src="avatar/f21.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f22.jpeg" onclick="setAvatar('avatar/f22.jpeg', this)"><img src="avatar/f22.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f23.jpeg" onclick="setAvatar('avatar/f23.jpeg', this)"><img src="avatar/f23.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f24.jpeg" onclick="setAvatar('avatar/f24.jpeg', this)"><img src="avatar/f24.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f25.jpeg" onclick="setAvatar('avatar/f25.jpeg', this)"><img src="avatar/f25.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
+                <div class="av-box" data-icon="avatar/f26.jpeg" onclick="setAvatar('avatar/f26.jpeg', this)"><img src="avatar/f26.jpeg" onerror="this.src='avatar/f1.jpeg'"></div>
             </div>
             
             <button class="connect-btn" onclick="authorize()">ARENAYA BAĞLAN</button>
@@ -250,8 +275,7 @@
 
             <div class="nav-r">
                 <div class="user-tag" onclick="editProfile()">
-                    <div id="active-avatar-container">
-                        </div>
+                    <div id="active-avatar-container"></div>
                     <span id="active-name">AHMET</span>
                 </div>
                 <button class="logout-btn" onclick="terminateSession()">ÇIKIŞ</button>
@@ -308,7 +332,7 @@
             pBox.appendChild(p);
         }
 
-        let selectedIcon = '⚡';
+        let selectedIcon = 'avatar/f1.jpeg';
 
         function refreshScores() {
             try { const f1 = JSON.parse(localStorage.getItem('f1-top-scores')); if(f1 && f1.length) document.getElementById('v-f1').innerText = f1[0].score.toFixed(3) + 's'; } catch(e) {}
@@ -330,12 +354,7 @@
                 document.getElementById('active-name').innerText = data.name.toUpperCase();
                 
                 const avContainer = document.getElementById('active-avatar-container');
-                if(data.icon === '🎬') {
-                    // JPEG UZANTISI İLE GÖSTERİM
-                    avContainer.innerHTML = `<img src="al-pacino.jpeg" onerror="this.parentElement.innerHTML='<span>🎬</span>'">`;
-                } else {
-                    avContainer.innerHTML = `<span>${data.icon || '🤖'}</span>`;
-                }
+                avContainer.innerHTML = `<img src="${data.icon || 'avatar/f1.jpeg'}" onerror="this.src='avatar/f1.jpeg'">`;
 
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('main-arena').style.display = 'flex';
@@ -363,11 +382,10 @@
             document.getElementById('login-overlay').style.display = 'flex';
             document.getElementById('close-modal').style.display = 'flex';
             
-            selectedIcon = data.icon;
+            selectedIcon = data.icon || 'avatar/f1.jpeg';
             document.querySelectorAll('.av-box').forEach(el => {
                 el.classList.remove('active');
-                // Al Pacino için görsel içeren kutuyu kontrol et
-                if(el.innerText === data.icon || (data.icon === '🎬' && el.querySelector('img'))) {
+                if(el.getAttribute('data-icon') === selectedIcon) {
                     el.classList.add('active');
                 }
             });

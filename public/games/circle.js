@@ -3,13 +3,16 @@ const ctx = canvas.getContext('2d');
 const display = document.getElementById('accuracy-display');
 const statusMsg = document.getElementById('status-msg');
 const resetBtn = document.getElementById('reset-btn');
-const userName = localStorage.getItem('user') || "OPERATÖR";
+
+// İsim artık lobiden (hubOperator) alınıyor
+const hubData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR"}');
+const userName = hubData.name.toUpperCase();
 
 let isDrawing = false;
 let points = [];
-const centerX = 175; // Canvas merkezleri (350/2)
+const centerX = 175; 
 const centerY = 175;
-const targetRadius = 130; // Hedef daire yarıçapı
+const targetRadius = 130; 
 
 function initCanvas() {
     canvas.width = 350;
@@ -17,13 +20,11 @@ function initCanvas() {
     if(window.innerWidth < 768) {
         canvas.width = 300;
         canvas.height = 300;
-        // Mobilde merkezleri güncelle
     }
 }
 
 initCanvas();
 
-// Mouse ve Touch Eventleri
 canvas.addEventListener('mousedown', startDrawing);
 canvas.addEventListener('mousemove', draw);
 canvas.addEventListener('mouseup', endDrawing);
@@ -32,7 +33,7 @@ canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches
 canvas.addEventListener('touchend', endDrawing);
 
 function startDrawing(e) {
-    if(points.length > 0) return; // Tek seferlik çizim
+    if(points.length > 0) return; 
     isDrawing = true;
     points = [];
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,17 +74,13 @@ function calculateAccuracy() {
     const currentTargetRadius = canvas.width * 0.38;
 
     points.forEach(p => {
-        // Her noktanın merkeze uzaklığını hesapla (Pythagoras)
         const dist = Math.sqrt(Math.pow(p.x - currentCenterX, 2) + Math.pow(p.y - currentCenterY, 2));
-        // Hedef yarıçaptan ne kadar sapmış?
         totalDiff += Math.abs(dist - currentTargetRadius);
     });
 
     const avgDiff = totalDiff / points.length;
-    // Puanlama mantığı: 100 üzerinden sapmayı çıkar
     let score = Math.max(0, 100 - (avgDiff * 1.5));
     
-    // Çizimin tamamlanma oranını kontrol et (Daire kapandı mı?)
     if(points.length < 50) score *= 0.5; 
 
     display.innerText = score.toFixed(1) + "%";

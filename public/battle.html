@@ -15,7 +15,7 @@
         
         body { 
             background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; 
-            height: 100vh; height: 100dvh; /* Mobil tarayıcı adres çubuğu düzeltmesi */
+            height: 100vh; height: 100dvh;
             overflow: hidden; display: flex; flex-direction: column; 
         }
 
@@ -56,7 +56,6 @@
         .scoreboard { width: 100%; display: flex; justify-content: center; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 10px; margin-bottom: 10px; }
         .sb-player { flex: 1; text-align: center; }
         .sb-name { font-family: 'Orbitron'; font-size: 0.8rem; color: #ddd; margin-bottom: 2px; }
-        /* Kırık kutu hatasını çözmek için font Rajdhani yapıldı */
         .sb-score { font-family: 'Rajdhani', sans-serif; font-size: 2.8rem; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 0 10px var(--cyan); }
         .sb-center { padding: 0 15px; border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
         .round-badge { background: linear-gradient(45deg, var(--gold), #ff8800); color: black; font-family: 'Orbitron'; font-weight: 900; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
@@ -128,7 +127,6 @@
             .power-system { margin-bottom: 10px; }
             .meter-bg { height: 25px; }
             #msg-box { font-size: 0.9rem; }
-            /* Buton küçültüldü ve içindeki yazı netleştirildi */
             .hit-btn { padding: 15px; font-size: 1.5rem; border-radius: 10px; box-shadow: 0 6px 0 #007799; letter-spacing: 2px; }
             .dmg-text { font-size: 2rem; }
         }
@@ -185,12 +183,16 @@
 
         <div class="clash-zone" id="clash-center">
             <div class="fighter-col" id="p1-col">
-                <div class="avatar-box" id="p1-avatar">⚡</div>
+                <div class="avatar-box" id="p1-avatar">
+                    <img src="avatar/f1.jpeg" onerror="this.src='avatar/f1.jpeg'">
+                </div>
                 <div class="hit-power-display" id="p1-power-text">0</div>
             </div>
             <div class="vs-text">VS</div>
             <div class="fighter-col" id="p2-col">
-                <div class="avatar-box" id="p2-avatar" style="border-color: var(--danger);">🤖</div>
+                <div class="avatar-box" id="p2-avatar" style="border-color: var(--danger);">
+                    <img src="avatar/f26.jpeg" onerror="this.src='avatar/f1.jpeg'">
+                </div>
                 <div class="hit-power-display" id="p2-power-text">0</div>
             </div>
         </div>

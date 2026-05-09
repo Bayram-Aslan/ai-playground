@@ -17,16 +17,12 @@ let gameMode = 'bot';
 let currentPlayer = 1;
 let p1StoredPower = 0;
 
-// LOBİ VERİLERİ (Al Pacino Koruması)
-const hubData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"⚡"}');
+// LOBİ VERİLERİ (Klasörlü Görsel Yükleme Sistemi)
+const hubData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"avatar/f1.jpeg"}');
 document.getElementById('p1-name-ui').innerText = hubData.name.toUpperCase();
-const p1AvatarBox = document.getElementById('p1-avatar');
 
-if (hubData.icon === '🎬') {
-    p1AvatarBox.innerHTML = `<img src="al-pacino.jpeg" style="width:100%; height:100%; object-fit:cover;" onerror="this.parentElement.innerText='🎬'">`;
-} else {
-    p1AvatarBox.innerText = hubData.icon;
-}
+const p1AvatarBox = document.getElementById('p1-avatar');
+p1AvatarBox.innerHTML = `<img src="${hubData.icon}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='avatar/f1.jpeg'">`;
 
 // OYUNU BAŞLAT
 function startGame(mode) {
@@ -36,11 +32,15 @@ function startGame(mode) {
 
     if (mode === 'local') {
         document.getElementById('p2-name-ui').innerText = "OYUNCU 2";
-        document.getElementById('p2-avatar').innerText = "👤";
+        // Local oynandığında ikinci oyuncu otomatik olarak f2.jpeg karakterini alır
+        document.getElementById('p2-avatar').innerHTML = `<img src="avatar/f2.jpeg" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='avatar/f1.jpeg'">`;
         document.getElementById('p2-avatar').style.borderColor = "var(--cyan)";
         document.getElementById('p2-avatar').style.boxShadow = "0 0 30px rgba(0,210,255,0.3), inset 0 0 20px rgba(0,210,255,0.2)";
         document.getElementById('p2-hp').style.background = "linear-gradient(-90deg, #00d2ff, #00aaff)";
         document.getElementById('p2-hp').style.boxShadow = "0 0 20px var(--cyan)";
+    } else {
+        // Bota karşı oynanırsa bot f26.jpeg alır
+        document.getElementById('p2-avatar').innerHTML = `<img src="avatar/f26.jpeg" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='avatar/f1.jpeg'">`;
     }
 
     updateHpUI();
@@ -122,7 +122,6 @@ function showHitNumbers(p1, p2) {
     p2Text.className = "hit-power-display show";
 }
 
-// HASAR HESAPLAMA (SAF FARK)
 function resolveCombat(power1, power2) {
     let dmg = Math.abs(power1 - power2);
     let msgBox = document.getElementById('msg-box');
@@ -160,7 +159,6 @@ function resolveCombat(power1, power2) {
     }, 1600);
 }
 
-// UÇAN HASAR YAZISI
 function showDamageEffect(dmg, targetId, color) {
     if(dmg === 0) return;
     const target = document.getElementById(targetId);
@@ -195,13 +193,7 @@ function resetBarUI(btnText, btnBg, msgText, glowColor) {
     let btn = document.getElementById('hit-btn');
     btn.innerText = btnText;
     btn.style.background = btnBg;
-    
-    if(glowColor === 'var(--cyan)') {
-        btn.style.boxShadow = "0 8px 0 #007799";
-    } else {
-        btn.style.boxShadow = "0 8px 0 #007799";
-    }
-    
+    btn.style.boxShadow = "0 8px 0 #007799";
     btn.disabled = false;
     isMoving = true;
     animateMeter(); 

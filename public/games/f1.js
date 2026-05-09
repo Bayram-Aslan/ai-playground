@@ -1,6 +1,6 @@
 let state = 'IDLE', startTime, timerInterval, animReq, attempt = 0;
 
-const operatorData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"🤖"}');
+const operatorData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"avatar/f1.jpeg"}');
 const user = operatorData.name;
 const userIcon = operatorData.icon;
 let top5 = JSON.parse(localStorage.getItem('f1-top-scores')) || [];
@@ -36,7 +36,6 @@ function startSequence() {
         if(count === 5) {
             clearInterval(timerInterval);
             state = 'WAIT';
-            // Bekleme süresi: 1.2sn ile 4.2sn arası rastgele
             timerInterval = setTimeout(go, Math.random() * 3000 + 1200);
         }
     }, 800);
@@ -44,7 +43,6 @@ function startSequence() {
 
 function go() {
     state = 'GO';
-    // Kırmızıları söndür, YEŞİLLERİ YAK
     lamps.forEach(l => {
         l.classList.remove('on');
         l.classList.add('green-on');
@@ -71,9 +69,6 @@ function stop() {
     timer.style.color = "var(--neon)";
     status.innerText = score < 0.25 ? "EFSANESİN!" : "BAŞARILI!";
     
-    // Yeşilleri söndür (isteğe bağlı, bitişte kalsın dersen bu satırı silebilirsin)
-    // resetLamps(); 
-
     log(`DENEME ${++attempt}`, score.toFixed(3) + "s", false);
     save(score);
     showReset();
@@ -110,11 +105,15 @@ function save(s) {
 function updateBoard() {
     leaderboard.innerHTML = top5.map((entry, i) => {
         const displayName = typeof entry.name === 'object' ? entry.name.name : entry.name;
-        const displayIcon = typeof entry.name === 'object' ? entry.name.icon : (entry.icon || "🏎️");
+        const displayIcon = typeof entry.name === 'object' ? entry.name.icon : (entry.icon || "avatar/f1.jpeg");
+        
+        // İsmin yanında yuvarlak minik bir fotoğraf çıkar
+        const imgTag = `<img src="${displayIcon}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px; object-fit:cover;" onerror="this.src='avatar/f1.jpeg'">`;
+        
         return `
-        <div class="list-item">
+        <div class="list-item" style="display:flex; align-items:center;">
             <span style="color:#555">${i+1}.</span>
-            <span style="flex-grow:1; margin-left:10px">${displayIcon} ${displayName.toUpperCase()}</span>
+            <span style="flex-grow:1; margin-left:10px">${imgTag} ${displayName.toUpperCase()}</span>
             <span style="color:var(--neon)">${entry.score.toFixed(3)}</span>
         </div>`;
     }).join('') || "<div class='list-item'>KAYIT YOK</div>";

@@ -1,13 +1,15 @@
 const socket = io();
-const userData = JSON.parse(localStorage.getItem('user') || '{"name":"OPERATÖR","avatar":"🤖"}');
+// Kullanıcının verisini Lobi'den (hubOperator) çeker
+const userData = JSON.parse(localStorage.getItem('hubOperator') || '{"name":"OPERATÖR","icon":"avatar/f1.jpeg"}');
 const userName = userData.name.toUpperCase();
-const userIcon = userData.avatar;
+const userIcon = userData.icon || "avatar/f1.jpeg";
 
+// Botların da artık klasörlü fotoğrafı var
 let botPlayers = [
-    {name: "AYHANCAN", score: 0, icon: "⚡"},
-    {name: "CENK_HOCA", score: 0, icon: "👨‍🏫"},
-    {name: "ROBOT_V3", score: 0, icon: "🤖"},
-    {name: "ELECTRO_G", score: 0, icon: "🎯"}
+    {name: "AYHANCAN", score: 0, icon: "avatar/f2.jpeg"},
+    {name: "CENK_HOCA", score: 0, icon: "avatar/f3.jpeg"},
+    {name: "ROBOT_V3", score: 0, icon: "avatar/f4.jpeg"},
+    {name: "ELECTRO_G", score: 0, icon: "avatar/f5.jpeg"}
 ];
 
 let currentQuestionSet = [], currentQ = 0, myScore = 0, timer, timeLeft = 20; 
@@ -16,7 +18,11 @@ let isMultiplayer = false;
 let canAnswer = true; 
 let hasShownSummary = false; 
 
-// Emojiler ve Kategori İsimleri
+// Resimleri yuvarlak küçük şekilde gösteren yardımcı fonksiyon
+function getAvatarImg(src) {
+    return `<img src="${src}" style="width:25px;height:25px;border-radius:50%;vertical-align:middle;object-fit:cover;margin-right:8px;border:1px solid #333;" onerror="this.src='avatar/f1.jpeg'">`;
+}
+
 const categoryIcons = {
     bilim: "🔬 BİLİM",
     edebiyat: "📚 EDEBİYAT",
@@ -88,8 +94,8 @@ socket.on('update_player_list', (data) => {
     document.getElementById('count').innerText = data.users.length;
     const listArea = document.getElementById('player-list-area');
     listArea.innerHTML = data.users.map(u => `
-        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px 12px; border-radius:5px; font-size:0.7rem; font-family:'Orbitron';">
-            ${u.ready ? '✅' : '⏳'} ${u.icon} ${u.name}
+        <div style="background:${u.ready ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${u.ready ? 'var(--neon)' : '#333'}; padding:8px 12px; border-radius:5px; font-size:0.7rem; font-family:'Orbitron'; display:flex; align-items:center;">
+            ${u.ready ? '✅' : '⏳'} ${getAvatarImg(u.icon)} ${u.name}
         </div>`).join('');
     
     const btn = document.getElementById('start-trigger');
@@ -259,7 +265,7 @@ function showRoundSummary() {
         }
     }
     
-    document.getElementById('round-leader-name').innerText = `GENEL LİDER: ${leader.icon || '🤖'} ${leader.name}`;
+    document.getElementById('round-leader-name').innerHTML = `GENEL LİDER: ${getAvatarImg(leader.icon)} ${leader.name}`;
     
     const rsScreen = document.getElementById('round-leaderboard');
     rsScreen.style.display = 'block';
@@ -285,7 +291,7 @@ function updateLeaderboard() {
     
     list.innerHTML = players.map((p, i) => `
         <div class="lb-item ${p.name === userName ? 'me' : ''}">
-            <span>${i+1}. ${p.icon || '🤖'} ${p.name}</span>
+            <span style="display:flex; align-items:center;">${i+1}. ${getAvatarImg(p.icon)} ${p.name}</span>
             <span>${p.score} P</span>
         </div>`).join('');
 }
@@ -293,7 +299,7 @@ function updateLeaderboard() {
 socket.on('update_room_leaderboard', (data) => {
     if(!isMultiplayer) return;
     let p = players.find(x => x.name === data.username);
-    if(p) p.score = data.score; else players.push({name: data.username, score: data.score, icon: "👤"});
+    if(p) p.score = data.score; else players.push({name: data.username, score: data.score, icon: "avatar/f6.jpeg"});
     updateLeaderboard();
 });
 
@@ -306,7 +312,7 @@ function endBattle() {
     players.sort((a, b) => b.score - a.score);
     finalLb.innerHTML = players.map((p, i) => `
         <div class="lb-item ${p.name === userName ? 'me' : ''}">
-            <span>${i+1}. ${p.icon || '🤖'} ${p.name}</span>
+            <span style="display:flex; align-items:center;">${i+1}. ${getAvatarImg(p.icon)} ${p.name}</span>
             <span>${p.score} P</span>
         </div>`).join('');
         
